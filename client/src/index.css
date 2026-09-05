@@ -220,12 +220,6 @@
   .hanka-primary-button::after { position: absolute; inset: 0; content: ""; transform: translateX(-125%); background: linear-gradient(100deg, transparent 22%, rgba(255,255,255,.6) 50%, transparent 76%); }
   .home-built-on-arc { display: inline-flex; align-items: center; gap: .45rem; color: #f4f7f4; font-family: "Geist", sans-serif; font-size: .76rem; font-weight: 700; letter-spacing: .02em; }
   .home-built-on-arc img { width: 1rem; height: 1rem; object-fit: contain; background: #fff; padding: .12rem; }
-  .arc-market-intro .hanka-kicker { font-size: 0 !important; }
-  .arc-market-intro .hanka-kicker::after { content: "ARC · SOCIAL PROOF EXCHANGE"; font-size: .66rem; }
-  .arc-market-intro .hanka-kicker + h1 + p { font-size: 0 !important; line-height: 0 !important; }
-  .arc-market-intro .hanka-kicker + h1 + p::after { content: "One shared dashboard for Bounties, source offers, and equal-collateral airdrop agreements on Arc."; font-size: .75rem; line-height: 1.25rem; }
-  .market-shell .m-5.border-dashed p + p { font-size: 0 !important; }
-  .market-shell .m-5.border-dashed p + p::after { content: "This board reads public Arc state. No sample Bounties are invented."; font-size: .875rem; }
   .hero-shine-text { color: var(--hanka-text); background: linear-gradient(112deg, var(--hanka-text) 20%, #f8fff5 46%, var(--hanka-text) 66%); background-size: 220% 100%; background-position: 100% 0; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
   .terms-stage { position: relative; min-height: 23rem; overflow: hidden; border: 1px solid var(--hanka-line); background: #112017; color: #f0f4ec; padding: 1.5rem; box-shadow: 0 26px 70px rgba(0,0,0,.18); isolation: isolate; }
   .terms-logo-bg { position: absolute; right: -1rem; bottom: -2.5rem; opacity: .1; transform: rotate(-10deg); }
@@ -546,4 +540,127 @@
   .bounty-market-row:nth-of-type(2) { animation-delay: 35ms; }
   .bounty-market-row:nth-of-type(3) { animation-delay: 70ms; }
   .bounty-market-row:nth-of-type(4) { animation-delay: 105ms; }
+}
+
+/* ---------------------------------------------------------------------------
+   HANKA market surfaces
+
+   .hanka-panel and .hanka-input were used throughout the market page but never
+   defined, so every card and field rendered as bare text on the page
+   background. They are real components now, alongside the wallet sheet and the
+   dashboard primitives.
+   These live in @layer components so Tailwind utilities still win: the broad
+   `.hanka-app input` selector otherwise out-specifies a utility like `pl-8`.
+   --------------------------------------------------------------------------- */
+
+@layer components {
+
+.hanka-panel { border: 1px solid var(--hanka-line); background: var(--hanka-panel); color: var(--hanka-text); }
+.hanka-panel-strong { background: var(--hanka-panel-strong); }
+.hanka-panel-interactive { transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease; }
+.hanka-panel-interactive:hover { border-color: color-mix(in srgb, var(--hanka-accent) 45%, var(--hanka-line)); background: var(--hanka-panel-strong); }
+
+.hanka-input,
+.hanka-app input:not([type="checkbox"]):not([type="radio"]),
+.hanka-app textarea,
+.hanka-app select {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--hanka-line);
+  background: #0d1610;
+  color: var(--hanka-text);
+  padding: .6rem .75rem;
+  font-family: "Geist", sans-serif;
+  font-size: .875rem;
+  line-height: 1.4;
+  border-radius: 0;
+}
+.hanka-app textarea { min-height: 5.5rem; resize: vertical; }
+.hanka-app input::placeholder, .hanka-app textarea::placeholder { color: color-mix(in srgb, var(--hanka-muted) 78%, transparent); }
+.hanka-app input:focus-visible, .hanka-app textarea:focus-visible, .hanka-app select:focus-visible, .hanka-input:focus-visible {
+  outline: 2px solid var(--hanka-accent);
+  outline-offset: -2px;
+  border-color: var(--hanka-accent);
+}
+/* Native date and number controls default to a dark-on-dark glyph in Chromium. */
+.hanka-app input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+.hanka-app input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(.65); cursor: pointer; }
+
+.hanka-label { display: block; margin-bottom: .35rem; color: var(--hanka-muted); font-family: "Geist", sans-serif; font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.hanka-field-hint { margin-top: .3rem; color: var(--hanka-muted); font-size: .72rem; line-height: 1.35; }
+.hanka-divider { border-top: 1px solid var(--hanka-line); }
+
+.hanka-chip { display: inline-flex; align-items: center; gap: .35rem; border: 1px solid var(--hanka-line); padding: .2rem .5rem; font-family: "Geist", sans-serif; font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--hanka-muted); }
+.hanka-chip-open { border-color: color-mix(in srgb, var(--hanka-accent) 55%, var(--hanka-line)); color: var(--hanka-accent); }
+.hanka-chip-live { border-color: rgba(126, 190, 255, .45); color: #9ccbff; }
+.hanka-chip-done { border-color: rgba(150, 220, 170, .35); color: #96dcaa; }
+.hanka-chip-warn { border-color: rgba(240, 190, 110, .45); color: #f0be6e; }
+.hanka-chip-dead { border-color: rgba(230, 130, 130, .4); color: #e88; }
+
+.hanka-tab { display: inline-flex; min-height: 2.5rem; align-items: center; gap: .4rem; border: 1px solid var(--hanka-line); background: transparent; padding: 0 .85rem; color: var(--hanka-muted); font-family: "Geist", sans-serif; font-size: .72rem; font-weight: 700; letter-spacing: .08em; }
+.hanka-tab[aria-selected="true"] { border-color: var(--hanka-accent); background: color-mix(in srgb, var(--hanka-accent) 16%, transparent); color: var(--hanka-text); }
+
+.hanka-stat { border: 1px solid var(--hanka-line); background: var(--hanka-panel); padding: .95rem 1rem; }
+.hanka-stat-label { color: var(--hanka-muted); font-family: "Geist", sans-serif; font-size: .64rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+.hanka-stat-value { margin-top: .35rem; font-family: "Geist", sans-serif; font-size: 1.75rem; font-weight: 650; letter-spacing: -.05em; line-height: 1.05; }
+.hanka-stat-note { margin-top: .2rem; color: var(--hanka-muted); font-size: .72rem; }
+
+.hanka-hash { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .7rem; word-break: break-all; color: var(--hanka-muted); }
+
+.hanka-banner { display: flex; gap: .6rem; border: 1px solid var(--hanka-line); background: var(--hanka-panel); padding: .8rem .9rem; font-size: .8rem; line-height: 1.45; color: var(--hanka-muted); }
+.hanka-banner-warn { border-color: rgba(240, 190, 110, .4); color: #f2d3a1; }
+.hanka-banner-error { border-color: rgba(230, 130, 130, .4); color: #f0b6b6; }
+
+/* Wallet control ---------------------------------------------------------- */
+
+.arc-wallet-connect { position: relative; z-index: 60; }
+.arc-wallet-trigger { background: var(--hanka-accent); color: var(--hanka-accent-text); }
+.arc-wallet-label { max-width: 8.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arc-wallet-network-warning { display: inline-flex; align-items: center; gap: .35rem; margin-top: .35rem; color: #f0be6e; font-size: .68rem; font-weight: 600; }
+.arc-wallet-scrim { display: none; }
+.arc-wallet-menu { position: absolute; right: 0; top: calc(100% + .5rem); z-index: 70; width: 20rem; max-height: min(70vh, 32rem); overflow-y: auto; border: 1px solid var(--hanka-line); background: #101713; padding: .75rem; color: var(--hanka-text); box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
+.arc-wallet-menu-grip { display: none; }
+.arc-wallet-menu-title { padding: 0 .25rem .35rem; font-family: "Geist", sans-serif; font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--hanka-muted); }
+.arc-wallet-menu-note { padding: 0 .25rem .6rem; font-size: .74rem; line-height: 1.4; color: var(--hanka-muted); }
+.arc-wallet-menu-footnote { padding: .7rem .25rem 0; font-size: .66rem; line-height: 1.35; color: var(--hanka-muted); }
+.arc-wallet-loading { display: flex; align-items: center; gap: .5rem; padding: .75rem .25rem; font-size: .74rem; color: var(--hanka-muted); }
+.arc-wallet-options { display: grid; gap: .3rem; }
+.arc-wallet-option { display: flex; min-height: 2.9rem; width: 100%; align-items: center; justify-content: space-between; gap: .75rem; border: 1px solid transparent; padding: 0 .75rem; text-align: left; font-size: .875rem; font-weight: 600; color: inherit; }
+.arc-wallet-option:hover { border-color: var(--hanka-line); background: #172019; }
+.arc-wallet-option:disabled { opacity: .6; }
+.arc-wallet-option-name { display: inline-flex; align-items: center; gap: .5rem; }
+.arc-wallet-option-name img { width: 1.25rem; height: 1.25rem; object-fit: contain; }
+.arc-wallet-account { margin-bottom: .75rem; border: 1px solid var(--hanka-line); background: #0d1610; padding: .7rem; }
+.arc-wallet-account-address { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .72rem; word-break: break-all; color: var(--hanka-text); }
+.arc-wallet-account-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .6rem; }
+.arc-wallet-account-actions > * { display: inline-flex; min-height: 2.1rem; align-items: center; gap: .3rem; border: 1px solid var(--hanka-line); padding: 0 .55rem; font-size: .7rem; font-weight: 600; color: var(--hanka-muted); }
+.arc-wallet-account-actions > *:hover { border-color: color-mix(in srgb, var(--hanka-accent) 50%, var(--hanka-line)); color: var(--hanka-text); }
+
+/* On a phone the chooser becomes a bottom sheet so it is reachable by thumb
+   and cannot be clipped by the sticky header it lives in. */
+@media (max-width: 640px) {
+  .arc-wallet-scrim { display: block; position: fixed; inset: 0; z-index: 80; background: rgba(4, 9, 6, .66); backdrop-filter: blur(2px); }
+  .arc-wallet-menu { position: fixed; z-index: 90; right: 0; bottom: 0; left: 0; top: auto; width: auto; max-height: 82vh; border-width: 1px 0 0; padding: .5rem 1rem calc(1.1rem + env(safe-area-inset-bottom)); }
+  .arc-wallet-menu-grip { display: block; width: 2.75rem; height: .25rem; margin: .25rem auto .75rem; border-radius: 999px; background: var(--hanka-line); }
+  .arc-wallet-option { min-height: 3.25rem; border-color: var(--hanka-line); }
+  .arc-wallet-label { max-width: 6.5rem; }
+}
+
+/* Dashboard --------------------------------------------------------------- */
+
+.hanka-record { display: grid; gap: .9rem; border: 1px solid var(--hanka-line); background: var(--hanka-panel); padding: 1rem; }
+.hanka-record:hover { border-color: color-mix(in srgb, var(--hanka-accent) 35%, var(--hanka-line)); }
+.hanka-record-head { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.hanka-record-title { font-family: "Geist", sans-serif; font-size: 1.15rem; font-weight: 650; letter-spacing: -.03em; }
+.hanka-record-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: .75rem; }
+.hanka-record-term { color: var(--hanka-muted); font-size: .64rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.hanka-record-value { margin-top: .15rem; font-size: .85rem; font-weight: 600; }
+.hanka-record-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.hanka-record-actions button { min-height: 2.5rem; }
+
+@media (max-width: 640px) {
+  .hanka-stat-value { font-size: 1.45rem; }
+  .hanka-record-actions button { flex: 1 1 9rem; }
+}
+
 }

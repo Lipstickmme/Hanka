@@ -154,8 +154,19 @@ const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(
 
 export default defineConfig({
   plugins,
+  // Server-side names are mirrored into the client build so the deployed
+  // contract and RPC list can be configured without a VITE_ prefix. An empty
+  // string means "unset": the client then falls back to shared/arcNetwork.ts.
   define: {
-    "import.meta.env.VITE_HANKA_MARKET_V2_TESTNET_ADDRESS": JSON.stringify(process.env.HANKA_MARKET_V2_TESTNET_ADDRESS ?? process.env.HANKA_MARKET_V2_TESTNET_ADDRESS_2),
+    "import.meta.env.VITE_HANKA_MARKET_V2_TESTNET_ADDRESS": JSON.stringify(
+      process.env.VITE_HANKA_MARKET_V2_TESTNET_ADDRESS ?? process.env.HANKA_MARKET_V2_TESTNET_ADDRESS ?? process.env.HANKA_MARKET_V2_TESTNET_ADDRESS_2 ?? "",
+    ),
+    "import.meta.env.VITE_ARC_TESTNET_ESCROW_ADDRESS": JSON.stringify(
+      process.env.VITE_ARC_TESTNET_ESCROW_ADDRESS ?? process.env.ARC_TESTNET_ESCROW_ADDRESS ?? "",
+    ),
+    "import.meta.env.VITE_ARC_TESTNET_RPC_URLS": JSON.stringify(
+      process.env.VITE_ARC_TESTNET_RPC_URLS ?? process.env.ARC_TESTNET_RPC_URLS ?? "",
+    ),
   },
   resolve: {
     alias: {

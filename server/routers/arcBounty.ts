@@ -1,5 +1,6 @@
 import { isAddress } from "viem";
 import { z } from "zod";
+import { HANKA_MARKET_V2_TESTNET_ADDRESS } from "../../shared/arcNetwork";
 import { ARC_SOCIAL_INSTRUMENTS } from "../../shared/arcBountyTerms";
 import { assertArcSocialSourceAvailable, createArcSocialOffer, listArcSocialBountyMetadata, listArcSocialOffers, recordArcSocialProofRetention, registerArcSocialBounty, registerArcSocialBountySource, reportArcSocialProofEarlyRemoval, reviewArcSocialProofEarlyRemoval } from "../market/arcBounties";
 import { publicProcedure, rateLimitedPublicProcedure, router } from "../_core/trpc";
@@ -24,9 +25,30 @@ const socialTerms = z.object({
   minimumFollowerCount: metric.optional(), minimumEthosScore: metric.optional(), minimumKaitoScore: metric.optional(), minimumKaitoAura: metric.optional(), requireVerifiedSource: z.boolean().optional(),
 });
 
+/**
+ * The offchain metadata layer must only ever describe the contract the app
+ * actually settles through. With no environment variable set this used to
+ * reject every request, silently disabling bounty metadata; it now falls back
+ * to the same reviewed deployment the client does.
+ */
+export function configuredMarketAddress(env: NodeJS.ProcessEnv = process.env) {
+  const candidates = [
+    env.HANKA_MARKET_V2_TESTNET_ADDRESS,
+    env.HANKA_MARKET_V2_TESTNET_ADDRESS_2,
+    env.VITE_HANKA_MARKET_V2_TESTNET_ADDRESS,
+    env.VITE_ARC_TESTNET_ESCROW_ADDRESS,
+    HANKA_MARKET_V2_TESTNET_ADDRESS,
+  ];
+  for (const candidate of candidates) {
+    const value = candidate?.trim();
+    if (value && isAddress(value)) return value;
+  }
+  return null;
+}
+
 function assertConfiguredEscrow(input: string) {
-  const configured = (process.env.HANKA_MARKET_V2_TESTNET_ADDRESS_2 ?? process.env.VITE_ARC_TESTNET_ESCROW_ADDRESS)?.trim();
-  if (!configured || !isAddress(configured) || configured.toLowerCase() !== input.toLowerCase()) throw new Error("This Arc Bounty contract is not the configured HANKA Testnet escrow.");
+  const configured = configuredMarketAddress();
+  if (!configured || configured.toLowerCase() !== input.toLowerCase()) throw new Error("This Arc Bounty contract is not the configured HANKA Testnet escrow.");
 }
 
 export const arcBountyRouter = router({

@@ -7,27 +7,25 @@ const read = (path: string) => readFileSync(resolve(root, path), "utf8");
 
 describe("Arc-only marketplace", () => {
   it("routes historical public market URLs into the unified Arc market", () => {
-    expect(read("client/src/App.tsx")).toContain('<Redirect to="/arc" replace />');
     expect(read("client/src/pages/Market.tsx")).toContain('<Redirect to="/arc" replace />');
     expect(read("client/src/pages/Operations.tsx")).toContain('<Redirect to="/arc/dashboard" replace />');
+    const app = read("client/src/App.tsx");
+    expect(app).toContain('path="/market" component={Market}');
+    expect(app).toContain('path="/operations" component={Operations}');
   });
 
-  it("keeps social proof in the funded Arc Bounty lifecycle without a manual OTC sender", () => {
-    const market = read("client/src/pages/ArcMarket.tsx");
+  it("keeps settlement in the funded Arc contract lifecycle without a manual OTC sender", () => {
+    const market = read("client/src/components/ArcMarketWorkspace.tsx");
     const wallet = read("client/src/lib/arcTestnet.ts");
     const walletControl = read("client/src/components/ArcWalletConnect.tsx");
     expect(market).toContain("Fund proof. Settle onchain.");
-    expect(market).toContain("trpc.arcBounty.metadata");
-    expect(market).toContain("register.mutateAsync");
-    expect(market).toContain("ArcWalletConnect");
+    expect(market).toContain("ArcHeader");
     expect(walletControl).toContain("Connect EVM wallet");
-    expect(market).toContain("No sample Bounties are invented.");
-    expect(market).toContain("SELL SOCIAL PROOF");
-    expect(market).toContain("Airdrop outcome agreement");
+    expect(market).toContain("No sample bounties are invented.");
     expect(market).not.toContain("Solana");
     expect(market).not.toContain("manual OTC");
     expect(wallet).not.toContain("sendArcManualOtcUsdc");
-    expect(wallet).toContain("TaskCreated");
+    expect(wallet).toContain("BountyCreated");
   });
 
   it("uses bright backing surfaces for Arc's black logo in public Arc entry points", () => {
@@ -37,5 +35,12 @@ describe("Arc-only marketplace", () => {
     expect(styles).toContain("background: #fff");
     expect(home).toContain("home-built-on-arc");
     expect(home).toContain("Built on Arc");
+  });
+
+  it("does not imply the escrow contract reads social-platform data", () => {
+    const market = read("client/src/components/ArcMarketWorkspace.tsx");
+    const contract = read("contracts/src/HankaMarketV2.sol");
+    expect(contract).toContain("It does not read X, Ethos, Kaito, Aura, or airdrop data.");
+    expect(market).toContain("The contract stores commitment hashes, not brief text.");
   });
 });

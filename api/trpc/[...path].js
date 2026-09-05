@@ -37164,6 +37164,9 @@ init_isAddress();
 init_toHex();
 init_keccak256();
 
+// shared/arcNetwork.ts
+var HANKA_MARKET_V2_TESTNET_ADDRESS = "0x37ab7a189de40211647e5e1d1f22cbb18c23a51c";
+
 // shared/arcBountyTerms.ts
 var ARC_SOCIAL_INSTRUMENTS = [
   "vouch",
@@ -50415,9 +50418,23 @@ var socialTerms = external_exports.object({
   minimumKaitoAura: metric.optional(),
   requireVerifiedSource: external_exports.boolean().optional()
 });
+function configuredMarketAddress(env = process.env) {
+  const candidates = [
+    env.HANKA_MARKET_V2_TESTNET_ADDRESS,
+    env.HANKA_MARKET_V2_TESTNET_ADDRESS_2,
+    env.VITE_HANKA_MARKET_V2_TESTNET_ADDRESS,
+    env.VITE_ARC_TESTNET_ESCROW_ADDRESS,
+    HANKA_MARKET_V2_TESTNET_ADDRESS
+  ];
+  for (const candidate of candidates) {
+    const value = candidate?.trim();
+    if (value && isAddress(value)) return value;
+  }
+  return null;
+}
 function assertConfiguredEscrow(input) {
-  const configured = process.env.VITE_ARC_TESTNET_ESCROW_ADDRESS?.trim();
-  if (!configured || !isAddress(configured) || configured.toLowerCase() !== input.toLowerCase()) throw new Error("This Arc Bounty contract is not the configured HANKA Testnet escrow.");
+  const configured = configuredMarketAddress();
+  if (!configured || configured.toLowerCase() !== input.toLowerCase()) throw new Error("This Arc Bounty contract is not the configured HANKA Testnet escrow.");
 }
 var arcBountyRouter = router({
   metadata: publicProcedure.input(external_exports.object({ contractAddress: escrowAddress })).query(({ input }) => {

@@ -1,6 +1,6 @@
 import { Redirect } from "wouter";
 
-/** Historic operations URL. Manual payouts were retired with Arc-only settlement. */
+/** Historic operations URL, now part of the wallet dashboard. */
 export default function Operations() {
   return <Redirect to="/arc/dashboard" replace />;
 }
