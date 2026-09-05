@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm run build:vercel:function && pnpm run build:vercel",
+  "outputDirectory": "dist/public",
+  "functions": {
+    "api/trpc/[...path].js": {
+      "includeFiles": "drizzle/neon/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/manus-storage/:path*",
+      "destination": "/api/manus-storage/:path*"
+    },
+    {
+      "source": "/:path((?!api(?:/|$)).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

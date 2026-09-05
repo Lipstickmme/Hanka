@@ -1,0 +1,1 @@
+ALTER TABLE "arcSocialBounties" ALTER COLUMN "projectSlug" DROP DEFAULT;

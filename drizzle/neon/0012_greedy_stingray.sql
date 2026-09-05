@@ -1,0 +1,1 @@
+ALTER TABLE "arcSocialBountySources" ADD COLUMN "isVerifiedClaim" boolean DEFAULT false NOT NULL;

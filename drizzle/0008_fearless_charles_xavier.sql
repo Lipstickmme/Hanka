@@ -1,0 +1,2 @@
+ALTER TABLE `sellerCommitments` ADD `parentOfferId` int;--> statement-breakpoint
+CREATE INDEX `sellerCommitments_parentOfferId_status_idx` ON `sellerCommitments` (`parentOfferId`,`sellerCommitmentStatus`);

@@ -1,0 +1,3 @@
+# Referral and HANKA Points validation
+
+Desktop and mobile `/market` screenshots were captured after the referral and HANKA Points implementation. The desktop market filter shows a dedicated HANKA Points tab alongside All proof, Vouch, Slashes, and More proof. The mobile filter wraps HANKA Points cleanly into two lines without clipping, while the fixed Buy/Sell/Support dock remains visible. The referral panel is mounted below the live market section and is intended to stack into one column on mobile. Local preview logs continue to report the known missing Neon PostgreSQL URL, so the referral profile and leaderboard are empty in local preview; production requires the configured Neon connection for live persistence.

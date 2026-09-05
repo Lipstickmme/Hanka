@@ -1,0 +1,284 @@
+# Project TODO
+
+- [x] Define public order language, market-suggestion disclosures, and non-guarantee notices.
+- [x] Design database tables for identity links, wallets, market entries, payment evidence, order states, manual review decisions, activity logs, and archival metadata.
+- [x] Apply database migrations and create secure query helpers with user and administrator ownership checks.
+- [x] Build a responsive public CommonsMade market board for buyer requests and seller offers.
+- [x] Build identity-gated buyer request creation with a $0.50 minimum for requests below 1,000 vouches.
+- [x] Build seller offer creation with receiving-wallet capture and fulfilment confirmation.
+- [x] Implement server-side Solana transaction verification for recipient, sender wallet, signature uniqueness, finalized status, and confirmed amount.
+- [x] Add order state history, plain-language status messages, failure/dispute flows, and no-guarantee notices.
+- [x] Build private role-gated operations views for evidence review, completion claims, manual decisions, and audit logs.
+- [x] Add a safe 24-hour archival job that creates protected snapshot records and removes public exposure without storing sensitive transaction information in the public interface.
+- [x] Create an implementation-plan document explaining the architecture, operating process, safeguards, and deployment steps.
+- [x] Write and run Vitest coverage for validation, state transitions, ownership gates, and transaction-reuse prevention.
+- [x] Validate the responsive UI on desktop and mobile, resolve build/runtime issues, and record results.
+- [x] Create and push the completed project to a private GitHub repository.
+- [x] Replace account-authentication and X-linking work with a wallet-only participation flow.
+- [x] Limit settlement support to USDC on Solana and verify the canonical USDC transfer amount and recipient wallet server-side.
+- [x] Implement seller fills against buyer requests, including available-vouch quantity, receiving-wallet address, and a no-overfill rule.
+- [x] Let request participants and sellers mark their own fulfilment as done, while retaining all payout and review operations privately for the administrator.
+- [x] Add Vitest coverage for wallet ownership enforcement and administrator-only operations access.
+- [x] Add Vitest coverage for the request and seller completion state transitions through manual payout resolution.
+- [x] Implement a wallet-confirmed cancellation path and plain-language cancelled-state message for unpaid buyer requests.
+- [x] Sanitize private archive snapshots to exclude wallet addresses and payment signatures while retaining the operational record needed for review.
+- [x] Add Vitest coverage for archive payload sanitization and the archived-record visibility rule.
+- [x] Add a Vitest test that confirms archived records are excluded from public market visibility.
+- [x] After publication, create the protected recurring archive job for `/api/scheduled/archive-market`.
+- [x] Move public listings to a dedicated market route with a concise entry page that leads users into the app.
+- [x] Support CommonsMade as the default project and allow additional compatible projects to be added and selected for point listings.
+- [x] Expand point bands through 50,000+ points and correct the 0.50-USDC validation path.
+- [x] Repair the wallet payment trigger so buyer USDC transactions reliably open the connected wallet for approval.
+- [x] Add buyer-initiated purchases of seller listings with a payment-backed commitment flow.
+- [x] Allow a seller to delist an uncommitted open offer using a wallet-signed action.
+- [x] Calculate a transparent 5% platform fee and show administrators gross amount, platform fee, and seller net payout without exposing private operations publicly.
+- [x] Update administrator access so the configured administrative wallet holder can review payment evidence, buyer confirmation, seller completion claims, and manual payout status.
+- [x] Document a practical Vercel-compatible backend and storage configuration without weakening existing payment verification safeguards.
+- [x] Add automated tests for fee calculation, new point bands, delisting authorization, and buyer purchase state transitions.
+- [x] Add Vitest coverage for seller-delisting authorization, including non-owner and non-open listing rejection.
+- [x] Add Vitest coverage for buyer purchase reservation, payment verification, buyer confirmation, seller completion, and review progression.
+- [x] Add a Vercel-compatible build and serverless deployment configuration that does not depend on the managed development runtime.
+- [x] Keep secrets, Solana verification, relational data, private archives, and administrator controls server-side in the Vercel deployment design.
+- [x] Superseded: no recurring scheduler requested; removed Vercel Cron configuration and the active scheduled job.
+- [x] Validate the production build and document the Vercel environment variables, database/storage provider requirements, and deployment limitations.
+- [x] Superseded: no Cron callback remains, so no Vercel Cron authorization test is required.
+- [x] Remove the registered recurring archive job and all Vercel Cron configuration.
+- [x] Replace automatic 24-hour archival with a compact, administrator-initiated archive action that retains only minimal operational summaries.
+- [x] Replace the deferred Supabase migration with an Upstash-backed compact state adapter for serverless Vercel deployments.
+- [x] Keep durable payment and payout evidence, including signature-reuse protection, in the existing secure data store while using Upstash only for compact, short-lived public-board cache state.
+- [x] Document required Upstash environment values, Vercel configuration, data-retention limits, and the no-cron operating model.
+- [x] Push the Upstash compact-state adapter and updated Vercel handoff documentation to the private GitHub repository.
+- [x] Push the Vercel-compatible, no-cron update and Supabase handoff documentation to the private GitHub repository.
+- [x] Map the buyer, seller, payment verification, review, payout, compact archive, and Upstash cache workflow end to end.
+- [x] Perform a focused server-side security review of wallet proofs, transaction verification, authorization, privacy, rate limiting, and deployment configuration.
+- [x] Validate the user-facing testing paths and apply safe high-priority fixes discovered during review.
+- [x] Deliver a concise concept, workflow, and security improvement report with prioritized next steps.
+- [x] Push the security hardening changes, payment-signature migration, and workflow review to the private GitHub repository.
+- [x] Require an action-bound wallet signature before a buyer request can be created and validate all supplied wallet addresses as Solana public keys.
+- [x] Restrict wallet activity lookup to a signed wallet confirmation so public callers cannot enumerate another wallet’s request and seller activity.
+- [x] Automatically release stale unpaid direct-offer reservations during normal request handling so a buyer cannot lock a seller listing indefinitely.
+- [x] Allow a seller who directly sold an `ASK` listing to submit the existing signed completion mark for administrator review.
+- [x] Enforce payment-signature uniqueness across both buyer requests and direct seller-offer purchases, not only within each table.
+- [x] Add Upstash-backed, server-side rate limiting for public marketplace mutations when the configured Redis service is available.
+- [x] Bind payment finalization updates to the original buyer wallet and awaiting-payment state to prevent stale verification from activating a changed record.
+- [x] Reduce the marketplace hero height and visual dominance to prioritize active listings.
+- [x] Convert market cards into slimmer, denser professional list rows that show more listings in the initial viewport.
+- [x] Reduce the market-price guidance panel and remove public-facing human-review language while retaining accurate essential terms.
+- [x] Validate the compact marketplace at desktop and mobile widths, then publish the refinement.
+- [x] Remove the remaining public-facing review wording from completion messages and wallet activity while preserving clear payout terms.
+- [x] Save and publish the compact-market refinement, then verify the published market view at desktop and mobile widths.
+- [x] Verify the live custom-domain market at a mobile viewport after the compact-market publication.
+- [x] Capture inspectable loaded mobile evidence of the published compact market, including the live seller rows and reduced midpoint panel.
+- [x] Replace internal review-status labels with neutral public wallet-activity language and revalidate the activity display.
+- [x] Push the compact marketplace refinement and public-copy cleanup to the private GitHub repository.
+- [x] Extend the marketplace data model and wallet workflows so CommonsMade slashes can be listed, requested, purchased, completed, and administered alongside vouches.
+- [x] Replace the separate request-and-offer panels with a unified leaderboard-style market ledger that lists buy and sell intent together using restrained contrasting shades.
+- [x] Remove repetitive row-level wallet connection buttons and provide clear, contextual actions that appear only when a connected wallet can act.
+- [x] Rework the market board for mobile-first readability while retaining the compact leaderboard hierarchy and both vouch/slash market types.
+- [x] Add validation and Vitest coverage for slash-market lifecycle handling, then verify the redesigned board on desktop and mobile before publishing.
+- [x] Remove reputation-band inputs and active listing columns so new vouch and slash listings use exact account-specific quantities only.
+- [x] Update buy and sell forms, market rows, activity labels, and validation messages to describe the exact vouch or slash quantity offered or requested.
+- [x] Preserve historical band data only for existing records while publishing a responsive exact-quantity leaderboard refinement.
+- [x] Show the vouch-or-slash instrument in private operations records so administrators can review and pay both market types.
+- [x] Make disconnected leaderboard rows non-actionable and direct wallet connection through the single top-level wallet control.
+- [x] Add lifecycle-focused tests for slash bids, slash listings, fills, direct purchases, completions, and administrator visibility.
+- [x] Retain historical reputation-band context in private operations records while keeping new public rows exact-quantity only.
+- [x] Add service-level tests for slash buyer bids and slash seller listings through the market lifecycle inputs.
+- [x] Add service-level tests for slash fills, direct purchases, completion transitions, and administrator operations visibility.
+- [x] Publish the exact-quantity leaderboard and verify the live custom-domain market at desktop and mobile widths.
+- [x] Capture OCR-backed evidence of the published 390px mobile leaderboard, including filters, live rows, midpoint panels, and the absence of row-level connection actions.
+- [x] Capture readable live mobile proof that disconnected listing rows use a neutral placeholder rather than Connect, Buy, or Fill actions.
+- [x] Update the public entry page to describe both vouches and slashes and remove its remaining human-review language.
+- [x] Define and implement source X account and buyer target-account fields for every vouch or slash allocation.
+- [x] Enforce that a source account can allocate at most one vouch or slash of a given instrument to the same target account.
+- [x] Change multi-unit seller supply into one-unit allocations across distinct buyer target accounts rather than a bulk sale to one buyer.
+- [x] Add reconciliation-ready source and target account details to private operations records without exposing private settlement mechanics publicly.
+- [x] Add a clear administrator entry point and verify the configured administrator role and wallet access path to the review dashboard.
+- [x] Add allocation and administrator-access tests, verify responsive workflows, and publish the update.
+- [x] Authorize Solana wallet 6SaEG13gzLSkYnam6gRkM2NGRctVLL5JZ9vEi5MgGydd as an additional private-operations administrator wallet while preserving role checks.
+- [x] Show source and target X-account details throughout private operations, including payment-evidence rows and all administrator reconciliation views.
+- [x] Verify that the operations desk displays source and target allocation details for commitments and direct purchases before publishing.
+- [x] Verify the updated private operations evidence table at desktop and mobile widths after the final source-target reconciliation changes.
+- [x] Remove OAuth and Google-style sign-in from the private operations entry flow so administrators use Solana wallets only.
+- [x] Gate private operations routes and procedures solely through an authorized Solana-wallet allowlist plus an action-bound signature.
+- [x] Update wallet-only operations copy, tests, and responsive access views, then publish the access refinement.
+- [x] Publish the wallet-only operations access update and verify the live `/ops` route has no OAuth or Google login option.
+- [x] Verify the live wallet-only `/ops` entry at desktop and mobile widths on the custom domain.
+- [x] Capture OCR-backed text proof that the 390px live custom-domain operations entry is wallet-only and contains no OAuth or Google login option.
+- [x] Correct the private operations metrics so active commitments and completed allocation history are counted separately and accurately.
+- [x] Add a required points-per-unit value to new vouch and slash source-account listings and retain it through allocation, review, and archive records.
+- [x] Display the source account, exact available units, and points per unit in the public leaderboard and private operations reconciliation views.
+- [x] Enforce source-handle and target-handle uniqueness per instrument while allowing the same buyer wallet to allocate units to different target handles.
+- [x] Add count, point-value, and multi-target-wallet tests; verify desktop/mobile views and publish the refinement.
+- [x] Add an authorized operations workflow to assign a real per-unit point value to an eligible legacy source offer without inventing the value.
+- [x] Verify the wallet-first buyer, seller, source-target allocation, payment, completion, and wallet-only operations workflow contracts against the current product rules.
+- [x] Add integration coverage for the complete wallet-first lifecycle from listing or request through payment verification, source-target allocation, completion, and administrator review.
+- [x] Re-verify the published custom-domain market and wallet-only operations entry after propagation, including the latest points-per-unit and legacy-offer behavior.
+- [x] Document the sandbox limitation for real wallet signatures and USDC transfers separately from automated workflow verification.
+- [x] Add restrained, reduced-motion-aware animations to clarify market hierarchy and interaction feedback without delaying wallet or payment actions.
+- [x] Fix the seller listing submission so a required per-unit point value is always sent and invalid input is explained before signing.
+- [x] Add concise in-form guidance that distinguishes buyer target X handles from seller source X handles, units, point value, and USDC quote.
+- [x] Remove CommonsMade-specific public landing and market copy so the marketplace remains project-neutral.
+- [x] Move the public Terms and Operations links from the header into the footer while preserving clear navigation.
+- [x] Reduce the landing hero scale and spacing so Enter market remains visible at small mobile heights.
+- [x] Rename the public product to HANKA Vouch & Slash Market while retaining the existing logo mark.
+- [x] Clarify the public positioning as a market for vouches, slashes, and compatible social-proof instruments.
+- [x] Push the current HANKA release to the private GitHub main branch.
+- [x] Diagnose why the Vercel deployment cannot see the existing listed vouches and slashes, and document the production data configuration required.
+- [x] Verify the saved Vercel deployment guidance covers the shared durable database, server API handler, required secrets, and Upstash’s cache-only role.
+- [x] Provide an Upstash setup, retention, and Vercel environment-variable guide for the HANKA market.
+- [x] Switch HANKA persistence from the managed MySQL/TiDB database to a clean Neon PostgreSQL database without transferring legacy records.
+- [x] Configure Vercel for the fresh Neon database; the completed final design removes Upstash entirely.
+- [x] Validate that the clean deployment starts with no historic listings and that the verified wallet-first lifecycle coverage remains safe without initiating a payment.
+- [x] Trigger the active Vercel project to deploy the already-pushed GitHub main release, which is now serving production.
+- [x] Remove the Vercel configuration validation issue that was causing new production deployments to fail within seconds.
+- [x] Superseded the Vercel-managed Upstash `KV_REST_API_*` alias path by removing Upstash entirely.
+- [x] Restore Vercel deep-link routing so public market routes resolve to the HANKA single-page application without intercepting API functions.
+- [x] Replace the generated explicit tRPC bundle with one source-traced TypeScript catch-all function so the fresh Neon board endpoint has one maintained runtime path.
+- [x] Retire the generated bundled handler that produced the startup crash and replace it with the direct source-traced TypeScript function.
+- [x] Replace the layered Vercel runtime setup with a direct, simple Neon-only serverless backend.
+- [x] Remove Upstash cache and rate-limiting integration, environment aliases, dependencies, tests, and obsolete guidance.
+- [x] Preserve wallet-first validation, payment safeguards, source-target rules, and private operations while starting the Neon market with no legacy records.
+- [x] Validate the simple Vercel API route and empty Neon board before publishing the backend reset.
+- [x] Fix the live Vercel API invocation failure with a standard JavaScript Vercel handler and verified native Node tRPC adapter.
+- [x] Replace the repeatedly failing custom Vercel serverless entry with the smallest native deployment path without further user-side diagnostics.
+- [x] Move the fresh Neon schema bootstrap from the Vercel build into the single serverless runtime with a tracked migration bundle.
+- [x] Package the tRPC function as one Vercel-traceable serverless bundle to eliminate the current module-resolution failure.
+- [x] Remove unused template OAuth and storage server code no longer used by the wallet-first product.
+- [x] Add a logo-based favicon and browser metadata for HANKA.
+- [x] Refine the HANKA interface with tasteful logo motion, shine effects, and a modern SaaS visual system that respects reduced-motion preferences.
+- [x] Run a focused cleanup and security review covering dependency graph, server-only secrets, signed actions, input validation, and deployment configuration.
+- [x] Fix the local `/market` database-unavailable query error without accepting the legacy MySQL environment in production.
+- [x] Expand the social-proof catalogue beyond vouchers and slashes to include follows, reposts, comments, and X Space participation levels.
+- [x] Replace public Bid/List language with simpler Buy/Sell actions while retaining existing wallet and payment safeguards.
+- [x] Unify the landing page with the marketplace’s high-value dark SaaS visual system and add an accessible light/dark mode toggle.
+- [x] Apply Geist typography to compact interface text, retain HANKA display typography, and add a considered premium icon system.
+- [x] Redesign the terms panel as an overlayed HANKA mark treatment with reduced-motion-aware typed text.
+- [x] Add restrained shine, hover, and entry motion to market rows and primary actions without reducing list density or accessibility.
+- [x] Remove all public light-mode controls and light theme surfaces so HANKA is consistently dark-only.
+- [x] Redesign Buy and Sell forms for contrast, readability, and dark HANKA visual consistency.
+- [x] Make every landing-page proof catalogue item link to the matching filtered market view.
+- [x] Optimize complete-market discovery and add recommended pricing guidance for all proof types.
+- [x] Use singular Vouch terminology consistently in the market filters and public discovery labels.
+- [x] Replace remaining marketplace-form and dashboard references to plural vouchers with singular Vouch terminology.
+- [x] Remove off-palette blue button styling and standardize marketplace controls to sharp-edged HANKA colors with shine.
+- [x] Add the supplied Ethos logo consistently wherever public Ethos vouch and Ethos slash labels appear.
+- [x] Humanize the landing-page language, remove the wallet-first label, and add restrained editorial text shine.
+- [x] Reduce the landing hero scale and rebalance first-screen spacing so the Buy or sell proof CTA remains visible at 100% desktop zoom.
+- [x] Let visitors submit a wallet-linked customer-support message that authorized operators can read privately.
+- [x] Optimize landing, market, forms, and support for a fast thumb-friendly mobile HANKA experience while preserving the dark modern theme.
+- [x] Push the latest validated mobile HANKA refinement to the connected GitHub main branch.
+- [x] Repair the Vite preview HMR WebSocket connection for the proxied /market development page.
+- [x] Eliminate the residual Vite development-client WebSocket error from the active market preview.
+- [x] Add the supplied Phantom logo to wallet-connect buttons across responsive HANKA surfaces.
+- [x] Replace the verbose landing terms panel with a compact animated transaction terminal and Transactions-tab underlay.
+- [x] Add richer marketplace subject icons and detail fields, including supplied Kaito branding and honest seller follower, Ethos-score, and Kaito-score fields.
+- [x] Build a wallet-based referral system with ten direct referral slots, capped multilevel HANKA Point rewards, auditable point events, a paginated top-100 leaderboard, and HANKA Points marketplace support.
+- [x] Fix the /market Database is unavailable error and validate the Neon-backed board query in preview and Vercel builds.
+- [x] Add an operator-only Transfers section showing buyer-confirmed payout-ready seller wallets and exact post-fee USDC amounts, with duplicate-payout protection and no manual wallet re-entry.
+- [x] Add seller-declared Kaito Aura alongside Ethos score, X followers, and Kaito score on live-board listings with branded marks, and reduce marketplace hero text/spacing.
+- [x] Add downloadable HANKA social cards for leaderboard top-100 wallets only, showing verified scores, referral link, completed sales, and completed purchases with privacy-safe wallet display.
+- [x] Add copyable referral link text, themed PNG social-card downloads with icons and shine, and slimmer multi-column live-board listing rolls based on the supplied reference.
+- [x] Add native X/Web Share actions for PNG cards, sortable live-board source-metric columns, and operator-controlled verified seller metric badges.
+- [x] Optimize live-board listings with narrower columns, a dedicated platform-scores column, and durable production logo URLs verified for Vercel.
+- [x] Animate the hero transaction terminal, use uploaded Ethos/Phantom/Kaito/Opera public assets with a faint Opera underlay, add a mobile-safe multi-wallet chooser, and compact live-board numbers and missing-score icons.
+
+- [x] Replace the Opera underlay with the newly supplied smaller asset through durable storage.
+- [x] Redesign HANKA social cards with clearer alignment, platform logos, and readable metric hierarchy.
+- [x] Use the full referral link in social cards instead of the referral code label.
+- [x] Replace Phantom branding with the supplied Solana logo on wallet-connect surfaces.
+- [x] Validate social-card PNG export, responsive marketplace branding, tests, builds, and publish to production/GitHub main.
+
+- [x] Replace the current hero Opera underlay with the newly uploaded Opera 1 PNG in the landing terminal and marketplace hero.
+- [x] Replace wallet-connect branding with the newly uploaded Solana PNG while preserving provider discovery and chooser behavior.
+- [x] Verify mobile wallet connection affordances and multiple injected Solana wallet options.
+- [x] Run regression tests, production builds, responsive screenshots, then publish and push GitHub main.
+
+- [x] Diagnose and fix Vercel delivery of the latest Opera and Solana assets plus mobile Phantom wallet detection.
+- [x] Restore visible Opera underlay treatment in the landing hero while preserving text readability.
+- [x] Replace the terminal-only Opera treatment with a full-screen landing-page background underlay.
+- [x] Replace the landing supporting paragraph with concise HANKA Exchange positioning.
+- [x] Restrict social-card download and sharing controls to the connected wallet that owns the leaderboard entry.
+- [x] Add the Ethos mark beside the landing hero’s Ethos reference.
+- [x] Animate terminal output with a restrained typing-load treatment.
+- [x] Add Solana USDT and Arc EVM testnet payment-network choices using supplied USDC and Arc marks.
+- [x] Move payment-network selection into a USDC-branded Connect control with USDC Solana and USDC Arc options.
+- [x] Show the terminal blinking cursor only on the actively typing line.
+- [x] Make Opera underlays more visible across the landing and full marketplace hero with responsive mobile placement.
+- [x] Move Arc to the top of the Connect dropdown as a disabled Mainnet-soon option while keeping Solana functional.
+- [x] Remove the explanatory sentence from the Connect payment dropdown.
+- [x] Add seller-selected proof-retention periods to offers and completed proof commitments.
+- [x] Display the retention commitment and its expiry across marketplace, buyer activity, and operations views.
+- [x] Allow operators to record verified early removal and ban the violating source from new HANKA listings.
+- [x] Research Arc testnet and Circle-supported token requirements for a safe HANKA settlement design.
+- [x] Define collateralized point-exchange and task-escrow contract workflows, including timeouts, fees, disputes, and explicit approvals.
+- [x] Add a tested, testnet-only smart-contract foundation with a restricted dispute resolver and no stored private keys.
+- [x] Add Arc EVM wallet connection and testnet transaction flows while preserving Solana USDC as a separately labelled alternative.
+- [x] Configure token support only for verified Arc testnet deployments of USDC, EURC, and Circle cirBTC, with token decimals read from the contract where not documented.
+- [x] Document secure private-key handling and require explicit confirmation before any real Arc testnet deployment transaction.
+- [x] Define wallet-owned Arc point-exchange and task record discovery, status, and completed-history rules.
+- [x] Add read-only onchain discovery for connected-wallet active and completed Arc escrow records.
+- [x] Build a responsive Arc dashboard for personal point exchanges and task escrows with status, counterparties, terms hashes, and ArcScan links.
+- [x] Validate dashboard behavior, production build compatibility, and mobile responsiveness before publishing.
+- [x] Verify the Arc Testnet deployment script’s secret boundaries and required public configuration values.
+- [x] Provide a safe step-by-step Arc Testnet wallet, contract deployment, and Vercel configuration handoff without receiving a private key.
+- [x] Package the HANKA Arc Testnet escrow source, minimal local tooling, and VS Code deployment guide without credentials.
+- [x] Add a secure Windows PowerShell and Command Prompt deployment-key setup fix for the standalone Arc Testnet package.
+- [x] Provide an exact mapping of Arc Testnet deployment placeholders, wallet roles, local environment variables, and the single public Vercel value.
+- [x] Verify the deployed Arc Testnet contract and provide the safe HANKA activation and faucet-token test sequence.
+- [x] Confirm the deployed Arc Testnet contract verification settings and explain the HANKA frontend activation and redeployment boundary.
+- [x] Consolidate Arc and Solana entry points into a clear Arc-first wallet experience while retaining Solana USDC as manual OTC settlement.
+- [x] Show a clear Arc-wallet handoff when users on the Solana path request point-exchange or Bounty escrow capabilities.
+- [x] Rename the onchain task market to Bounty and build a dense, responsive live Bounty board based only on actual onchain records.
+- [x] Add an Arc build attribution with the Arc mark to the landing page and retain the existing HANKA visual system.
+- [x] Complete terminal typing sequences so each line resolves to its full intended text before the next line begins.
+- [x] Validate Arc-first and Solana-alternative paths, Bounty interactions, responsive layouts, tests, and production builds before publishing.
+- [x] Remove the Solana wallet, manual OTC settlement, and split-market interface from the active HANKA user experience.
+- [x] Use the existing Arc Testnet escrow contract’s funded Bounty lifecycle for social-proof work, with the social commitment hashed into the same task terms; no contract redeployment is required.
+- [x] Build an Arc-only social-proof Bounty creation and discovery interface without demo listings or fabricated user activity.
+- [x] Restore a generic EVM injected-wallet connection flow and remove Rainbow-specific branding or provider assumptions.
+- [x] Rework the unified Bounty board with the supplied dense-market hierarchy, responsive columns, search, sorting, and an Arc-focused action rail.
+- [x] Add bright high-contrast placement behind or adjacent to the black Arc logo wherever it is displayed.
+- [x] Validate Arc-only contract flows, mobile/desktop behavior, full tests, and production builds before publishing.
+- [x] Document the missing local dependencies recovery sequence before a Windows Arc Testnet deployment retry.
+- [x] Add a provider-neutral EVM wallet chooser and preserve a direct injected-wallet fallback so Rainbow is not the sole visible path.
+- [x] Add the Arc mark to wallet controls and automatically switch or add Arc Testnet before account access.
+- [x] Replace the Arc marketplace hero with a compact, underlay-backed market header that prioritizes the Bounty board.
+- [x] Gate the My Activity menu entry to connected EVM wallets and use uppercase market navigation labels.
+- [x] Update landing copy and terminal sequence for the unified Arc Bounty offering while keeping every typed terminal line complete.
+- [x] Validate multi-wallet connection, network switching, responsive layouts, terminal completion, tests, and Vercel builds before publishing.
+- [x] Move the Bounty creation form out of the market listing page and into an accessible responsive modal.
+- [x] Add a clear HANKA Bounty brief, summary, and concrete verifiable-deliverables workflow mapped to the committed onchain terms.
+- [x] Add transparent content restrictions and confirmation controls without claiming that offchain moderation replaces the contract dispute process.
+- [x] Add a winner-cap reward explanation and optional token/location/verification discovery fields with honest current support states.
+- [x] Preserve the existing Arc Testnet approval and user-controlled wallet funding confirmation at the end of Bounty creation.
+- [x] Validate modal behavior, form constraints, accessibility, test coverage, responsive layouts, and production builds before publishing.
+- [x] Add a claimant-side Bounty submission modal that appears only for the accepted worker and preserves the existing Arc delivery transaction.
+- [x] Let claimants confirm each committed deliverable, add a required evidence description and optional links, and keep local file previews transparent about their storage limits.
+- [x] Add content restrictions and a claimant attestation without claiming HANKA selects winners or owns submitted rights.
+- [x] Validate claimant eligibility, delivery-hash generation, responsive layout, tests, and production builds before publishing.
+- [x] Separate social-proof Buy and Sell offers from the requester-funded Bounty creation workflow.
+- [x] Let a social-proof seller declare a named source account, available proof type, public follower count, Kaito score, Kaito Aura, and self-declared verification status without fabricating credentials.
+- [x] Let a social-proof buyer define minimum source metrics and the target social action they want to buy before funding an Arc Bounty.
+- [x] Make social-proof acceptance validate stated source metrics against the buyer’s committed minimums before the claimant can take the Bounty.
+- [x] Reframe point exchanges as airdrop-outcome agreements with equal collateral, uncertain timing/value disclosures, and explicit settlement or resolver-dispute terms.
+- [x] Validate separated flows, metric requirements, airdrop-risk copy, responsive interface, tests, and production builds before publishing.
+- [x] Remove CommonsMade as the default project from active Arc social-proof forms, metadata, and public copy.
+- [x] Let social-proof sellers and buyers describe any project, creator, brand, or individual scope with clear neutral labels.
+- [x] Simplify the Arc wallet connection control to show the Arc logo without the extra wallet icon.
+- [x] Replace the largest HANKA display-heading font with the supplied Geist family and remove the previous display font from active heading rules.
+- [x] Validate the updated Geist display-heading hierarchy across landing and Arc marketplace views before publishing.
+- [x] Separate Bounties, Airdrop Agreements, and Social Proof into clear market destinations with contextual navigation and no mixed-purpose form.
+- [x] Provide dedicated Bounty, airdrop-agreement, social-proof buyer, and social-proof seller forms with the right fields and contract disclaimers for each market.
+- [x] Make social-proof retention commitments explicit for follows and other proof types, with a defined commencement and expiry point after onchain delivery.
+- [x] Add signed early-removal reports with evidence references, an authorized review decision, and source-account restrictions when a violation is confirmed.
+- [x] Block a confirmed violating source X account from publishing or claiming new social-proof offers while keeping onchain dispute authority unchanged.
+- [x] Validate market routing, form separation, retention safeguards, mobile layouts, tests, and production builds before publishing.
+- [x] Keep Bounties, Airdrop Agreements, and Social Proof together in one Arc listing dashboard, using tabs and filters rather than separate market pages.
+- [x] Make the landing Arc attribution borderless and non-linking, and restrict Testnet wording to wallet connection controls.
+- [x] Ensure every animated hero-terminal command remains fully visible at desktop and mobile widths.
+- [x] Document current Bounty, Social Proof, and Airdrop Agreement workflows; assess gaps; and define a successor escrow-contract specification for future deployment.
+- [x] Implement a versioned HANKA Market V2 Solidity contract with fee snapshots, explicit timeouts, source attestations, social-proof retention bonds, and bilateral agreement settlement.
+- [x] Add focused V2 contract tests, compile the source, and document a safe Arc testnet deployment plan without storing signer secrets.
+- [x] Provide the exact revised local HANKA Market V2 deployment commands and post-deployment verification sequence.
+- [x] Diagnose and resolve the user’s missing local `arc:v2:deploy:testnet` script command.

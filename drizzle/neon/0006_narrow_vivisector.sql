@@ -1,0 +1,1 @@
+ALTER TABLE "sellerCommitments" ADD COLUMN "metricsVerifiedAt" timestamp with time zone;

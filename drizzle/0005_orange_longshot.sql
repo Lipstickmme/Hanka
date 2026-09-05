@@ -1,0 +1,2 @@
+ALTER TABLE `marketRequests` ADD `marketInstrument` enum('vouch','slash') DEFAULT 'vouch' NOT NULL;--> statement-breakpoint
+ALTER TABLE `sellerCommitments` ADD `marketInstrument` enum('vouch','slash') DEFAULT 'vouch' NOT NULL;

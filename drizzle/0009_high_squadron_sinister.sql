@@ -1,0 +1,1 @@
+ALTER TABLE `sellerCommitments` ADD `pointsPerUnit` int;

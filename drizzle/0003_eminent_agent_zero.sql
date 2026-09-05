@@ -1,0 +1,1 @@
+ALTER TABLE `sellerCommitments` MODIFY COLUMN `sellerCommitmentStatus` enum('open','awaiting_payment','matched','done','under_review','approved','paid','cancelled','disputed') NOT NULL DEFAULT 'open';

@@ -1,0 +1,2 @@
+ALTER TABLE `marketRequests` MODIFY COLUMN `vouchBand` enum('under_1k','1k_5k','5k_10k','10k_25k','5k_25k','25k_50k','50k_plus','25k_plus');--> statement-breakpoint
+ALTER TABLE `sellerCommitments` MODIFY COLUMN `vouchBand` enum('under_1k','1k_5k','5k_10k','10k_25k','5k_25k','25k_50k','50k_plus','25k_plus');

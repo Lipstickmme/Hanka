@@ -1,0 +1,1000 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "id": "26695f46-e16b-4d55-80f4-b25e132eb5a3",
+  "prevId": "b788a331-7b48-4d57-881d-b4ecf9f19564",
+  "tables": {
+    "activityLogs": {
+      "name": "activityLogs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "entityType": {
+          "name": "entityType",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entityPublicId": {
+          "name": "entityPublicId",
+          "type": "varchar(24)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "eventType": {
+          "name": "eventType",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actorWallet": {
+          "name": "actorWallet",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "actorAdminOpenId": {
+          "name": "actorAdminOpenId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "detail": {
+          "name": "detail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "activityLogs_entity_createdAt_idx": {
+          "name": "activityLogs_entity_createdAt_idx",
+          "columns": [
+            "entityPublicId",
+            "createdAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "activityLogs_id": {
+          "name": "activityLogs_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "marketProjects": {
+      "name": "marketProjects",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "isActive": {
+          "name": "isActive",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "marketProjects_slug_unique": {
+          "name": "marketProjects_slug_unique",
+          "columns": [
+            "slug"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "marketProjects_id": {
+          "name": "marketProjects_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "marketRequests": {
+      "name": "marketRequests",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "publicId": {
+          "name": "publicId",
+          "type": "varchar(24)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "buyerWallet": {
+          "name": "buyerWallet",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "targetHandle": {
+          "name": "targetHandle",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "projectSlug": {
+          "name": "projectSlug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'commonsmade'"
+        },
+        "marketInstrument": {
+          "name": "marketInstrument",
+          "type": "enum('vouch','slash')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'vouch'"
+        },
+        "vouchBand": {
+          "name": "vouchBand",
+          "type": "enum('under_1k','1k_5k','5k_10k','10k_25k','5k_25k','25k_50k','50k_plus','25k_plus')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "requestedQuantity": {
+          "name": "requestedQuantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "filledQuantity": {
+          "name": "filledQuantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "pricePerVouch": {
+          "name": "pricePerVouch",
+          "type": "decimal(14,6)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "totalUsdc": {
+          "name": "totalUsdc",
+          "type": "decimal(16,6)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "platformFeeUsdc": {
+          "name": "platformFeeUsdc",
+          "type": "decimal(16,6)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'0.000000'"
+        },
+        "sellerNetUsdc": {
+          "name": "sellerNetUsdc",
+          "type": "decimal(16,6)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'0.000000'"
+        },
+        "paymentSignature": {
+          "name": "paymentSignature",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "paymentVerifiedAt": {
+          "name": "paymentVerifiedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "requestStatus": {
+          "name": "requestStatus",
+          "type": "enum('awaiting_payment','open','filled','awaiting_review','completed','cancelled','disputed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'awaiting_payment'"
+        },
+        "buyerMarkedDoneAt": {
+          "name": "buyerMarkedDoneAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "archiveEligibleAt": {
+          "name": "archiveEligibleAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "archivedAt": {
+          "name": "archivedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "archiveSummary": {
+          "name": "archiveSummary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "marketRequests_publicId_unique": {
+          "name": "marketRequests_publicId_unique",
+          "columns": [
+            "publicId"
+          ],
+          "isUnique": true
+        },
+        "marketRequests_status_createdAt_idx": {
+          "name": "marketRequests_status_createdAt_idx",
+          "columns": [
+            "requestStatus",
+            "createdAt"
+          ],
+          "isUnique": false
+        },
+        "marketRequests_archiveEligibleAt_idx": {
+          "name": "marketRequests_archiveEligibleAt_idx",
+          "columns": [
+            "archiveEligibleAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "marketRequests_id": {
+          "name": "marketRequests_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "marketRequests_paymentSignature_unique": {
+          "name": "marketRequests_paymentSignature_unique",
+          "columns": [
+            "paymentSignature"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "paymentSignatureClaims": {
+      "name": "paymentSignatureClaims",
+      "columns": {
+        "signature": {
+          "name": "signature",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entityType": {
+          "name": "entityType",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entityPublicId": {
+          "name": "entityPublicId",
+          "type": "varchar(24)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "paymentSignatureClaims_entity_idx": {
+          "name": "paymentSignatureClaims_entity_idx",
+          "columns": [
+            "entityPublicId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "paymentSignatureClaims_signature": {
+          "name": "paymentSignatureClaims_signature",
+          "columns": [
+            "signature"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "payoutRecords": {
+      "name": "payoutRecords",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "sellerCommitmentId": {
+          "name": "sellerCommitmentId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recipientWallet": {
+          "name": "recipientWallet",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amountUsdc": {
+          "name": "amountUsdc",
+          "type": "decimal(16,6)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "grossAmountUsdc": {
+          "name": "grossAmountUsdc",
+          "type": "decimal(16,6)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'0.000000'"
+        },
+        "platformFeeUsdc": {
+          "name": "platformFeeUsdc",
+          "type": "decimal(16,6)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'0.000000'"
+        },
+        "payoutStatus": {
+          "name": "payoutStatus",
+          "type": "enum('queued','sent','withheld')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'queued'"
+        },
+        "externalReference": {
+          "name": "externalReference",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "adminNote": {
+          "name": "adminNote",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "decidedByOpenId": {
+          "name": "decidedByOpenId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "decidedAt": {
+          "name": "decidedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "payoutRecords_commitment_unique": {
+          "name": "payoutRecords_commitment_unique",
+          "columns": [
+            "sellerCommitmentId"
+          ],
+          "isUnique": true
+        },
+        "payoutRecords_status_createdAt_idx": {
+          "name": "payoutRecords_status_createdAt_idx",
+          "columns": [
+            "payoutStatus",
+            "createdAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "payoutRecords_id": {
+          "name": "payoutRecords_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "sellerCommitments": {
+      "name": "sellerCommitments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "publicId": {
+          "name": "publicId",
+          "type": "varchar(24)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "requestId": {
+          "name": "requestId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "parentOfferId": {
+          "name": "parentOfferId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sellerWallet": {
+          "name": "sellerWallet",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "profileHandle": {
+          "name": "profileHandle",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sourceHandle": {
+          "name": "sourceHandle",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "targetHandle": {
+          "name": "targetHandle",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "allocationKey": {
+          "name": "allocationKey",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "projectSlug": {
+          "name": "projectSlug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'commonsmade'"
+        },
+        "marketInstrument": {
+          "name": "marketInstrument",
+          "type": "enum('vouch','slash')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'vouch'"
+        },
+        "vouchBand": {
+          "name": "vouchBand",
+          "type": "enum('under_1k','1k_5k','5k_10k','10k_25k','5k_25k','25k_50k','50k_plus','25k_plus')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pricePerVouch": {
+          "name": "pricePerVouch",
+          "type": "decimal(14,6)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "grossUsdc": {
+          "name": "grossUsdc",
+          "type": "decimal(16,6)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "platformFeeUsdc": {
+          "name": "platformFeeUsdc",
+          "type": "decimal(16,6)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sellerNetUsdc": {
+          "name": "sellerNetUsdc",
+          "type": "decimal(16,6)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "buyerWallet": {
+          "name": "buyerWallet",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "paymentSignature": {
+          "name": "paymentSignature",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "paymentVerifiedAt": {
+          "name": "paymentVerifiedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "buyerMarkedDoneAt": {
+          "name": "buyerMarkedDoneAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sellerCommitmentStatus": {
+          "name": "sellerCommitmentStatus",
+          "type": "enum('open','awaiting_payment','matched','done','under_review','approved','paid','cancelled','disputed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'open'"
+        },
+        "sellerMarkedDoneAt": {
+          "name": "sellerMarkedDoneAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "archiveEligibleAt": {
+          "name": "archiveEligibleAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "archivedAt": {
+          "name": "archivedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "sellerCommitments_publicId_unique": {
+          "name": "sellerCommitments_publicId_unique",
+          "columns": [
+            "publicId"
+          ],
+          "isUnique": true
+        },
+        "sellerCommitments_allocationKey_unique": {
+          "name": "sellerCommitments_allocationKey_unique",
+          "columns": [
+            "allocationKey"
+          ],
+          "isUnique": true
+        },
+        "sellerCommitments_requestId_status_idx": {
+          "name": "sellerCommitments_requestId_status_idx",
+          "columns": [
+            "requestId",
+            "sellerCommitmentStatus"
+          ],
+          "isUnique": false
+        },
+        "sellerCommitments_parentOfferId_status_idx": {
+          "name": "sellerCommitments_parentOfferId_status_idx",
+          "columns": [
+            "parentOfferId",
+            "sellerCommitmentStatus"
+          ],
+          "isUnique": false
+        },
+        "sellerCommitments_status_createdAt_idx": {
+          "name": "sellerCommitments_status_createdAt_idx",
+          "columns": [
+            "sellerCommitmentStatus",
+            "createdAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "sellerCommitments_id": {
+          "name": "sellerCommitments_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "sellerCommitments_paymentSignature_unique": {
+          "name": "sellerCommitments_paymentSignature_unique",
+          "columns": [
+            "paymentSignature"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "openId": {
+          "name": "openId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(320)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "loginMethod": {
+          "name": "loginMethod",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "enum('user','admin')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'user'"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        },
+        "lastSignedIn": {
+          "name": "lastSignedIn",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "users_id": {
+          "name": "users_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "users_openId_unique": {
+          "name": "users_openId_unique",
+          "columns": [
+            "openId"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "walletChallenges": {
+      "name": "walletChallenges",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "wallet": {
+          "name": "wallet",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "varchar(48)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "usedAt": {
+          "name": "usedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "walletChallenges_wallet_action_idx": {
+          "name": "walletChallenges_wallet_action_idx",
+          "columns": [
+            "wallet",
+            "action"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "walletChallenges_id": {
+          "name": "walletChallenges_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    }
+  },
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {},
+    "indexes": {}
+  }
+}

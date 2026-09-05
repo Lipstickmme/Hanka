@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1787476634009,
+      "tag": "0000_steady_chimera",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1787479515621,
+      "tag": "0001_colorful_trish_tilby",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1787525733378,
+      "tag": "0002_bright_the_twelve",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1787526060234,
+      "tag": "0003_eminent_agent_zero",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1787528114086,
+      "tag": "0004_massive_sinister_six",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1787530438589,
+      "tag": "0005_orange_longshot",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1787530658338,
+      "tag": "0006_amazing_green_goblin",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1787533367408,
+      "tag": "0007_married_magdalene",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1787534139644,
+      "tag": "0008_fearless_charles_xavier",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1787555896448,
+      "tag": "0009_high_squadron_sinister",
+      "breakpoints": true
+    }
+  ]
+}
