@@ -9,6 +9,7 @@
     "build:vercel": "vite build",
     "build:vercel:function": "rm -f 'api/trpc/[...path].cjs' 'api/trpc/[...path].js' && esbuild server/vercel/trpcHandler.ts --platform=node --bundle --format=cjs --outfile='api/trpc/[...path].js' --footer:js='module.exports = module.exports.default;'",
     "arc:deploy:testnet": "node contracts/scripts/deployArcTestnet.mjs",
+    "arc:doctor": "node contracts/scripts/arcDoctor.mjs",
     "arc:v2:compile": "node contracts/scripts/compileHankaMarketV2.mjs",
     "arc:v2:deploy:testnet": "node contracts/scripts/deployHankaMarketV2Testnet.mjs",
     "db:generate": "drizzle-kit generate",

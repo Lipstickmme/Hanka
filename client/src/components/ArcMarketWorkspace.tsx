@@ -19,7 +19,9 @@ import {
 import {
   ARC_AGREEMENT_STATE,
   ARC_BOUNTY_STATE,
+  ARC_DIALECT_LABEL,
   ARC_TESTNET_TOKENS,
+  arcCapabilities,
   acceptArcAgreement,
   acceptArcBounty,
   approveArcBounty,
@@ -110,6 +112,10 @@ export function ArcMarketWorkspace({ initialMode = "bounties" }: { initialMode?:
 
   const bounties = snapshot?.bounties ?? [];
   const agreements = snapshot?.agreements ?? [];
+  // Until the dialect is known, assume the fuller contract; the action table
+  // falls back to the same default, and no write can fire before a snapshot.
+  const capabilities = snapshot?.capabilities ?? arcCapabilities("v2");
+  const actionContext = useMemo(() => ({ capabilities }), [capabilities]);
 
   const stats = useMemo(() => {
     const openBounties = bounties.filter(record => record.state === ARC_BOUNTY_STATE.open);
@@ -393,7 +399,7 @@ export function ArcMarketWorkspace({ initialMode = "bounties" }: { initialMode?:
             {mode === "bounties" ? (
               <>
                 {visibleBounties.map(record => (
-                  <BountyCard key={`bounty-${record.id}`} record={record} wallet={wallet} handlers={bountyHandlers} busy={busy} />
+                  <BountyCard key={`bounty-${record.id}`} record={record} wallet={wallet} handlers={bountyHandlers} busy={busy} context={actionContext} />
                 ))}
                 {!loading && !unread && visibleBounties.length === 0 ? (
                   <EmptyState
@@ -407,7 +413,7 @@ export function ArcMarketWorkspace({ initialMode = "bounties" }: { initialMode?:
             {mode === "points" ? (
               <>
                 {visibleAgreements.map(record => (
-                  <AgreementCard key={`agreement-${record.id}`} record={record} wallet={wallet} handlers={agreementHandlers} busy={busy} />
+                  <AgreementCard key={`agreement-${record.id}`} record={record} wallet={wallet} handlers={agreementHandlers} busy={busy} context={actionContext} />
                 ))}
                 {!loading && !unread && visibleAgreements.length === 0 ? (
                   <EmptyState
@@ -427,7 +433,7 @@ export function ArcMarketWorkspace({ initialMode = "bounties" }: { initialMode?:
                     title="Active bounties"
                     empty="No bounties in flight for this wallet."
                     records={visibleBounties.filter(record => !isBountyClosed(record))}
-                    render={record => <BountyCard key={`mine-b-${record.id}`} record={record} wallet={wallet} handlers={bountyHandlers} busy={busy} />}
+                    render={record => <BountyCard key={`mine-b-${record.id}`} record={record} wallet={wallet} handlers={bountyHandlers} busy={busy} context={actionContext} />}
                   />
                   <LedgerSection
                     title="Completed bounties"
@@ -439,7 +445,7 @@ export function ArcMarketWorkspace({ initialMode = "bounties" }: { initialMode?:
                     title="Active exchanges"
                     empty="No open or funded agreements for this wallet."
                     records={visibleAgreements.filter(record => !isAgreementClosed(record))}
-                    render={record => <AgreementCard key={`mine-a-${record.id}`} record={record} wallet={wallet} handlers={agreementHandlers} busy={busy} />}
+                    render={record => <AgreementCard key={`mine-a-${record.id}`} record={record} wallet={wallet} handlers={agreementHandlers} busy={busy} context={actionContext} />}
                   />
                   <LedgerSection
                     title="Completed exchanges"
@@ -457,6 +463,7 @@ export function ArcMarketWorkspace({ initialMode = "bounties" }: { initialMode?:
               <p className="hanka-kicker">NETWORK</p>
               <dl className="mt-3 grid gap-2 text-sm">
                 <StatusRow term="Chain" value="Arc Testnet · 5042002" />
+                <StatusRow term="Contract type" value={snapshot ? ARC_DIALECT_LABEL[snapshot.dialect] : "—"} />
                 <StatusRow
                   term="Contract"
                   value={contractAddress ? shortAddress(contractAddress) : "Not configured"}
@@ -511,8 +518,22 @@ export function ArcMarketWorkspace({ initialMode = "bounties" }: { initialMode?:
         </button>
       </div>
 
-      <BountyCreateDialog open={bountyDialogOpen} onOpenChange={setBountyDialogOpen} tokens={tokens} busy={busy} onSubmit={handleCreateBounty} />
-      <AgreementCreateDialog open={agreementDialogOpen} onOpenChange={setAgreementDialogOpen} tokens={tokens} busy={busy} onSubmit={handleCreateAgreement} />
+      <BountyCreateDialog
+        open={bountyDialogOpen}
+        onOpenChange={setBountyDialogOpen}
+        tokens={tokens}
+        busy={busy}
+        showReviewWindow={capabilities.has("bountyReviewWindow")}
+        onSubmit={handleCreateBounty}
+      />
+      <AgreementCreateDialog
+        open={agreementDialogOpen}
+        onOpenChange={setAgreementDialogOpen}
+        tokens={tokens}
+        busy={busy}
+        showPayoutSplits={capabilities.has("agreementPayoutSplits")}
+        onSubmit={handleCreateAgreement}
+      />
       <BountySubmissionDialog
         record={submissionRecord}
         deliverables={[]}

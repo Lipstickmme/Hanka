@@ -1,6 +1,25 @@
 import { isPastDeadline } from "@/lib/arcFormat";
-import { ARC_AGREEMENT_STATE, ARC_BOUNTY_STATE, sameAddress, type ArcAgreement, type ArcBounty } from "@/lib/arcTestnet";
+import {
+  ARC_AGREEMENT_STATE,
+  ARC_BOUNTY_STATE,
+  arcCapabilities,
+  sameAddress,
+  type ArcAgreement,
+  type ArcBounty,
+  type ArcCapability,
+} from "@/lib/arcTestnet";
 import type { Address } from "viem";
+
+/**
+ * What the deployed contract can do. HankaArcEscrow has no review window, no
+ * timeout exits and no retention bond, and offering those buttons against it
+ * would send calls its catch-all fallback rejects. Defaults to the full
+ * HankaMarketV2 set so a caller that has not resolved the dialect yet is not
+ * silently stripped of every action.
+ */
+export type ActionContext = { capabilities?: ReadonlySet<ArcCapability>; now?: number };
+
+const FULL_CAPABILITIES = arcCapabilities("v2");
 
 export type RecordAction = {
   id: string;
@@ -43,8 +62,9 @@ export function bountyActions(
   record: ArcBounty,
   wallet: Address | null,
   handlers: BountyActionHandlers,
-  now = Date.now(),
+  context: ActionContext = {},
 ): RecordAction[] {
+  const { capabilities = FULL_CAPABILITIES, now = Date.now() } = context;
   const actions: RecordAction[] = [];
   const isRequester = sameAddress(record.requester, wallet);
   const isTaker = sameAddress(record.taker, wallet);
@@ -60,7 +80,7 @@ export function bountyActions(
     if (isRequester && handlers.onCancel) {
       actions.push({ id: "cancel", label: "Cancel & refund", run: () => handlers.onCancel!(record) });
     }
-    if (acceptExpired && handlers.onExpire) {
+    if (acceptExpired && capabilities.has("bountyExpire") && handlers.onExpire) {
       actions.push({
         id: "expire",
         label: "Expire & refund",
@@ -74,7 +94,7 @@ export function bountyActions(
     if (isTaker && !dueExpired && handlers.onSubmit) {
       actions.push({ id: "submit", label: "Submit delivery", primary: true, run: () => handlers.onSubmit!(record) });
     }
-    if (dueExpired && handlers.onTimeoutAccepted) {
+    if (dueExpired && capabilities.has("bountyTimeoutAccepted") && handlers.onTimeoutAccepted) {
       actions.push({ id: "timeout-accepted", label: "Close & refund", run: () => handlers.onTimeoutAccepted!(record) });
     }
   }
@@ -83,7 +103,7 @@ export function bountyActions(
     if (isRequester && handlers.onApprove) {
       actions.push({ id: "approve", label: "Release reward", primary: true, run: () => handlers.onApprove!(record) });
     }
-    if (reviewExpired && handlers.onTimeoutSubmitted) {
+    if (reviewExpired && capabilities.has("bountyTimeoutSubmitted") && handlers.onTimeoutSubmitted) {
       actions.push({
         id: "timeout-submitted",
         label: "Release after review window",
@@ -101,7 +121,12 @@ export function bountyActions(
     actions.push({ id: "dispute", label: "Dispute", run: () => handlers.onDispute!(record) });
   }
 
-  if (record.state === ARC_BOUNTY_STATE.retentionActive && isPastDeadline(record.retentionEndsAt, now) && handlers.onReleaseBond) {
+  if (
+    record.state === ARC_BOUNTY_STATE.retentionActive &&
+    capabilities.has("retentionBond") &&
+    isPastDeadline(record.retentionEndsAt, now) &&
+    handlers.onReleaseBond
+  ) {
     actions.push({ id: "release-bond", label: "Release retention bond", run: () => handlers.onReleaseBond!(record) });
   }
 
@@ -113,8 +138,9 @@ export function agreementActions(
   record: ArcAgreement,
   wallet: Address | null,
   handlers: AgreementActionHandlers,
-  now = Date.now(),
+  context: ActionContext = {},
 ): RecordAction[] {
+  const { capabilities = FULL_CAPABILITIES, now = Date.now() } = context;
   const actions: RecordAction[] = [];
   const isMaker = sameAddress(record.maker, wallet);
   const isTaker = sameAddress(record.taker, wallet);
@@ -128,7 +154,7 @@ export function agreementActions(
     if (isMaker && handlers.onCancel) {
       actions.push({ id: "cancel", label: "Cancel & refund", run: () => handlers.onCancel!(record) });
     }
-    if (acceptExpired && handlers.onExpire) {
+    if (acceptExpired && capabilities.has("agreementExpire") && handlers.onExpire) {
       actions.push({ id: "expire", label: "Expire & refund", run: () => handlers.onExpire!(record) });
     }
   }
@@ -139,10 +165,12 @@ export function agreementActions(
         id: "decline",
         label: "Settle at decline split",
         run: () => handlers.onDecline!(record),
-        hint: `Pays the maker ${record.makerDeclinePayoutBps / 100}% of the pooled collateral, less fees.`,
+        hint: capabilities.has("agreementPayoutSplits")
+          ? `Pays the maker ${record.makerDeclinePayoutBps / 100}% of the pooled collateral, less fees.`
+          : "Settles the exchange on this contract's decline terms, less fees.",
       });
     }
-    if (settlementExpired && handlers.onTimeout) {
+    if (settlementExpired && capabilities.has("agreementTimeout") && handlers.onTimeout) {
       actions.push({
         id: "timeout",
         label: "Settle at timeout split",

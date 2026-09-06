@@ -17,6 +17,33 @@ import {
   type WalletClient,
 } from "viem";
 import {
+  ARC_AGREEMENT_STATE,
+  ARC_BOUNTY_STATE,
+  ARC_DIALECT_LABEL,
+  ARC_UNKNOWN_FUNCTION_SELECTOR,
+  ZERO_ADDRESS,
+  ZERO_HASH,
+  arcAgreementStateLabel,
+  arcBountyStateLabel,
+  arcCapabilities,
+  arcProofTypeLabel,
+  hankaArcEscrowAbi,
+  hankaMarketV2Abi,
+  normalizeV1Exchange,
+  normalizeV1Task,
+  normalizeV2Agreement,
+  normalizeV2Bounty,
+  type ArcAgreement,
+  type ArcBounty,
+  type ArcCapability,
+  type ArcDialect,
+  type TokenMeta,
+  type V1ExchangeTuple,
+  type V1TaskTuple,
+  type V2AgreementTuple,
+  type V2BountyTuple,
+} from "@/lib/arcContracts";
+import {
   ARC_TESTNET_CHAIN_ID,
   ARC_TESTNET_CHAIN_ID_HEX,
   ARC_TESTNET_EXPLORER_URL,
@@ -29,6 +56,24 @@ import {
 } from "@shared/arcNetwork";
 
 export { ARC_TESTNET_TOKENS, ARC_TESTNET_CHAIN_ID, type ArcTokenSymbol };
+export {
+  ARC_AGREEMENT_STATE,
+  ARC_BOUNTY_STATE,
+  ARC_DIALECT_LABEL,
+  ARC_UNKNOWN_FUNCTION_SELECTOR,
+  ZERO_ADDRESS,
+  ZERO_HASH,
+  arcAgreementStateLabel,
+  arcBountyStateLabel,
+  arcCapabilities,
+  arcProofTypeLabel,
+  hankaArcEscrowAbi,
+  hankaMarketV2Abi,
+  type ArcAgreement,
+  type ArcBounty,
+  type ArcCapability,
+  type ArcDialect,
+};
 
 export type ArcEip1193Provider = Parameters<typeof custom>[0] & {
   isMetaMask?: boolean;
@@ -71,97 +116,10 @@ const erc20Abi = parseAbi([
   "function symbol() view returns (string)",
 ]);
 
-/**
- * The deployed HankaMarketV2 interface, transcribed from the compiled ABI of
- * contracts/src/HankaMarketV2.sol. Every name here exists on the contract at
- * `getArcContractAddress()`; a mismatch here is a silent, total outage, so
- * server/hanka.market-v2.contract.test.ts checks this list against the
- * compiler output rather than trusting review.
- */
-export const hankaMarketV2Abi = parseAbi([
-  "function bountyCount() view returns (uint256)",
-  "function agreementCount() view returns (uint256)",
-  "function socialOfferCount() view returns (uint256)",
-  "function bounties(uint256) view returns (address requester, address taker, address token, address feeRecipient, uint128 reward, uint128 retentionBond, uint64 acceptBy, uint64 dueAt, uint64 reviewBy, uint64 retentionPeriod, uint64 retentionEndsAt, uint64 caseReviewPeriod, uint64 caseResolveBy, uint64 minimumFollowerCount, uint64 minimumEthosScore, uint64 minimumKaitoScore, uint64 minimumKaitoAura, uint16 feeBpsSnapshot, uint8 proofType, uint8 kind, uint8 state, bool caseDefaultToRequester, bool requireVerifiedSource, uint256 offerId, bytes32 termsHash, bytes32 metadataHash, bytes32 targetActionHash, bytes32 sourceIdentityHash, bytes32 deliveryHash, bytes32 evidenceHash)",
-  "function agreements(uint256) view returns (address maker, address taker, address token, address feeRecipient, uint128 collateral, uint64 acceptBy, uint64 settlementBy, uint16 feeBpsSnapshot, uint16 makerDeclinePayoutBps, uint16 makerTimeoutPayoutBps, uint8 state, bytes32 termsHash, bytes32 metadataHash)",
-  "function socialOffers(uint256) view returns (address seller, bytes32 sourceIdentityHash, bytes32 metadataHash, uint32 capacity, uint32 reserved, uint64 expiresAt, uint8 proofType, bool isActive)",
-  "function allowedToken(address) view returns (bool)",
-  "function defaultFeeBps() view returns (uint16)",
-  "function paused() view returns (bool)",
-  "function roleHolder(uint8) view returns (address)",
-  "function createBounty(address token, uint128 reward, uint64 acceptBy, uint64 dueAt, uint64 reviewBy, bytes32 termsHash, bytes32 metadataHash) returns (uint256 id)",
-  "function acceptBounty(uint256 id)",
-  "function submitBounty(uint256 id, bytes32 deliveryHash)",
-  "function approveBounty(uint256 id)",
-  "function disputeBounty(uint256 id)",
-  "function cancelUnacceptedBounty(uint256 id)",
-  "function expireUnacceptedBounty(uint256 id)",
-  "function timeoutAcceptedBounty(uint256 id)",
-  "function timeoutSubmittedBounty(uint256 id)",
-  "function openRetentionCase(uint256 id, bytes32 evidenceHash)",
-  "function releaseRetentionBond(uint256 id)",
-  "function createAgreement(address token, address taker, uint128 collateral, uint64 acceptBy, uint64 settlementBy, uint16 makerDeclinePayoutBps, uint16 makerTimeoutPayoutBps, bytes32 termsHash, bytes32 metadataHash) returns (uint256 id)",
-  "function acceptAgreement(uint256 id)",
-  "function declineAgreement(uint256 id)",
-  "function disputeAgreement(uint256 id)",
-  "function cancelUnacceptedAgreement(uint256 id)",
-  "function expireUnacceptedAgreement(uint256 id)",
-  "function timeoutAgreement(uint256 id)",
-  "event BountyCreated(uint256 indexed id, uint8 indexed kind, address indexed requester, address token, uint256 reward, uint256 retentionBond, uint64 acceptBy, uint64 dueAt, uint64 reviewBy, bytes32 termsHash, bytes32 metadataHash, bytes32 targetActionHash, uint256 offerId, uint16 feeBpsSnapshot, address feeRecipient)",
-  "event AgreementCreated(uint256 indexed id, address indexed maker, address indexed taker, address token, uint256 collateral, uint64 acceptBy, uint64 settlementBy, uint16 makerDeclinePayoutBps, uint16 makerTimeoutPayoutBps, bytes32 termsHash, bytes32 metadataHash, uint16 feeBpsSnapshot, address feeRecipient)",
-]);
-
-/** BountyState in contracts/src/HankaMarketV2.sol, by index. */
-export const ARC_BOUNTY_STATES = ["None", "Open", "Accepted", "Submitted", "Paid", "RetentionActive", "RetentionCase", "Disputed", "Settled", "Cancelled", "Expired"] as const;
-/** AgreementState in contracts/src/HankaMarketV2.sol, by index. */
-export const ARC_AGREEMENT_STATES = ["None", "Open", "Funded", "Disputed", "Settled", "Cancelled", "Expired"] as const;
-export const ARC_SOCIAL_PROOF_TYPES = ["Vouch", "Slash", "Follow", "Repost", "Comment", "SpaceListener", "SpaceSpeaker", "SpaceContributor", "HankaPoints"] as const;
-
-export const ARC_BOUNTY_STATE = { none: 0, open: 1, accepted: 2, submitted: 3, paid: 4, retentionActive: 5, retentionCase: 6, disputed: 7, settled: 8, cancelled: 9, expired: 10 } as const;
-export const ARC_AGREEMENT_STATE = { none: 0, open: 1, funded: 2, disputed: 3, settled: 4, cancelled: 5, expired: 6 } as const;
-
-export type ArcBounty = {
-  id: bigint;
-  requester: Address;
-  taker: Address;
-  token: Address;
-  tokenDecimals: number;
-  tokenSymbol: string;
-  reward: bigint;
-  retentionBond: bigint;
-  acceptBy: bigint;
-  dueAt: bigint;
-  reviewBy: bigint;
-  retentionEndsAt: bigint;
-  feeBpsSnapshot: number;
-  proofType: number;
-  kind: number;
-  state: number;
-  offerId: bigint;
-  termsHash: Hex;
-  metadataHash: Hex;
-  deliveryHash: Hex;
-};
-
-export type ArcAgreement = {
-  id: bigint;
-  maker: Address;
-  taker: Address;
-  token: Address;
-  tokenDecimals: number;
-  tokenSymbol: string;
-  collateral: bigint;
-  acceptBy: bigint;
-  settlementBy: bigint;
-  feeBpsSnapshot: number;
-  makerDeclinePayoutBps: number;
-  makerTimeoutPayoutBps: number;
-  state: number;
-  termsHash: Hex;
-  metadataHash: Hex;
-};
-
 export type ArcMarketSnapshot = {
+  /** Which contract the configured address turned out to be. */
+  dialect: ArcDialect;
+  capabilities: ReadonlySet<ArcCapability>;
   bounties: ArcBounty[];
   agreements: ArcAgreement[];
   paused: boolean;
@@ -176,12 +134,6 @@ export type ArcWalletDashboard = {
   claimed: ArcBounty[];
 };
 
-export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as Address;
-export const ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000" as Hex;
-
-export const arcBountyStateLabel = (state: number) => ARC_BOUNTY_STATES[state] ?? `State ${state}`;
-export const arcAgreementStateLabel = (state: number) => ARC_AGREEMENT_STATES[state] ?? `State ${state}`;
-export const arcProofTypeLabel = (proofType: number) => ARC_SOCIAL_PROOF_TYPES[proofType] ?? `Type ${proofType}`;
 export const sameAddress = (left?: string | null, right?: string | null) =>
   Boolean(left && right && left.toLowerCase() === right.toLowerCase());
 
@@ -560,7 +512,54 @@ async function mapWithConcurrency<T, R>(items: readonly T[], limit: number, work
   return results;
 }
 
-type TokenMeta = { decimals: number; symbol: string };
+/**
+ * Which contract is at the configured address.
+ *
+ * Probed rather than assumed: both contracts answer an unknown selector through
+ * `fallback() { revert NativeValueNotAccepted(); }`, so a wrong guess does not
+ * surface as "no such function" — it looks like an arbitrary contract revert,
+ * which is precisely how this market failed.
+ */
+let dialectProbe: Promise<ArcDialect> | null = null;
+
+export async function detectArcDialect(force = false): Promise<ArcDialect> {
+  if (force) dialectProbe = null;
+  dialectProbe ??= (async () => {
+    const address = contractOrThrow();
+    const client = arcPublicClient();
+    try {
+      await client.readContract({ address, abi: hankaMarketV2Abi, functionName: "bountyCount" });
+      return "v2" as const;
+    } catch (error) {
+      if (!isUnknownFunctionError(error)) throw error;
+    }
+    // Not v2, so confirm v1 rather than defaulting to it: a third contract at
+    // this address should read as a configuration error, not an empty market.
+    await client.readContract({ address, abi: hankaArcEscrowAbi, functionName: "taskCount" });
+    return "v1" as const;
+  })();
+  try {
+    return await dialectProbe;
+  } catch (error) {
+    dialectProbe = null;
+    throw error;
+  }
+}
+
+/** True when a call hit the catch-all fallback instead of a real function. */
+export function isUnknownFunctionError(error: unknown): boolean {
+  const text = JSON.stringify(
+    error,
+    (_key, value) => (typeof value === "bigint" ? value.toString() : value),
+  );
+  const message = `${(error as Error)?.message ?? ""} ${text ?? ""}`;
+  return (
+    message.includes(ARC_UNKNOWN_FUNCTION_SELECTOR) ||
+    message.includes("NativeValueNotAccepted") ||
+    // Some nodes return empty data for an unmatched selector instead.
+    /returned no data|function .* returned no data/i.test(message)
+  );
+}
 
 async function readTokenMetadata(tokens: readonly Address[]): Promise<Map<string, TokenMeta>> {
   const unique = Array.from(new Set(tokens.filter(token => token && token !== ZERO_ADDRESS).map(token => token.toLowerCase())));
@@ -580,69 +579,7 @@ async function readTokenMetadata(tokens: readonly Address[]): Promise<Map<string
   return new Map(entries);
 }
 
-type BountyTuple = readonly [
-  Address, Address, Address, Address, bigint, bigint, bigint, bigint, bigint, bigint,
-  bigint, bigint, bigint, bigint, bigint, bigint, bigint, number, number, number,
-  number, boolean, boolean, bigint, Hex, Hex, Hex, Hex, Hex, Hex,
-];
-
-type AgreementTuple = readonly [Address, Address, Address, Address, bigint, bigint, bigint, number, number, number, number, Hex, Hex];
-
-const toBounty = (id: bigint, value: BountyTuple, tokens: Map<string, TokenMeta>): ArcBounty => {
-  const meta = tokens.get(value[2].toLowerCase());
-  return {
-    id,
-    requester: value[0],
-    taker: value[1],
-    token: value[2],
-    tokenDecimals: meta?.decimals ?? 6,
-    tokenSymbol: meta?.symbol ?? "TOKEN",
-    reward: value[4],
-    retentionBond: value[5],
-    acceptBy: value[6],
-    dueAt: value[7],
-    reviewBy: value[8],
-    retentionEndsAt: value[10],
-    feeBpsSnapshot: Number(value[17]),
-    proofType: Number(value[18]),
-    kind: Number(value[19]),
-    state: Number(value[20]),
-    offerId: value[23],
-    termsHash: value[24],
-    metadataHash: value[25],
-    deliveryHash: value[28],
-  };
-};
-
-const toAgreement = (id: bigint, value: AgreementTuple, tokens: Map<string, TokenMeta>): ArcAgreement => {
-  const meta = tokens.get(value[2].toLowerCase());
-  return {
-    id,
-    maker: value[0],
-    taker: value[1],
-    token: value[2],
-    tokenDecimals: meta?.decimals ?? 6,
-    tokenSymbol: meta?.symbol ?? "TOKEN",
-    collateral: value[4],
-    acceptBy: value[5],
-    settlementBy: value[6],
-    feeBpsSnapshot: Number(value[7]),
-    makerDeclinePayoutBps: Number(value[8]),
-    makerTimeoutPayoutBps: Number(value[9]),
-    state: Number(value[10]),
-    termsHash: value[11],
-    metadataHash: value[12],
-  };
-};
-
-/**
- * Reads every bounty and agreement the contract holds, newest first.
- *
- * The contract stores commitment hashes rather than listing text, so callers
- * must render the hash as a reference and never invent a description for it.
- */
-export async function getArcMarketSnapshot(): Promise<ArcMarketSnapshot> {
-  const address = contractOrThrow();
+async function readV2Snapshot(address: Address): Promise<Omit<ArcMarketSnapshot, "dialect" | "capabilities" | "scannedAt">> {
   const client = arcPublicClient();
   const [bountyCount, agreementCount, paused, defaultFeeBps] = await Promise.all([
     client.readContract({ address, abi: hankaMarketV2Abi, functionName: "bountyCount" }),
@@ -650,28 +587,69 @@ export async function getArcMarketSnapshot(): Promise<ArcMarketSnapshot> {
     client.readContract({ address, abi: hankaMarketV2Abi, functionName: "paused" }),
     client.readContract({ address, abi: hankaMarketV2Abi, functionName: "defaultFeeBps" }),
   ]);
-
   const [bountyValues, agreementValues] = await Promise.all([
     mapWithConcurrency(recordIds(bountyCount), SCAN_CONCURRENCY, async id => ({
       id,
-      value: (await client.readContract({ address, abi: hankaMarketV2Abi, functionName: "bounties", args: [id] })) as BountyTuple,
+      value: (await client.readContract({ address, abi: hankaMarketV2Abi, functionName: "bounties", args: [id] })) as V2BountyTuple,
     })),
     mapWithConcurrency(recordIds(agreementCount), SCAN_CONCURRENCY, async id => ({
       id,
-      value: (await client.readContract({ address, abi: hankaMarketV2Abi, functionName: "agreements", args: [id] })) as AgreementTuple,
+      value: (await client.readContract({ address, abi: hankaMarketV2Abi, functionName: "agreements", args: [id] })) as V2AgreementTuple,
     })),
   ]);
-
-  const tokens = await readTokenMetadata([
-    ...bountyValues.map(item => item.value[2]),
-    ...agreementValues.map(item => item.value[2]),
-  ]);
-
+  const tokens = await readTokenMetadata([...bountyValues.map(item => item.value[2]), ...agreementValues.map(item => item.value[2])]);
   return {
-    bounties: bountyValues.map(({ id, value }) => toBounty(id, value, tokens)).sort((a, b) => Number(b.id - a.id)),
-    agreements: agreementValues.map(({ id, value }) => toAgreement(id, value, tokens)).sort((a, b) => Number(b.id - a.id)),
+    bounties: bountyValues.map(({ id, value }) => normalizeV2Bounty(id, value, tokens)),
+    agreements: agreementValues.map(({ id, value }) => normalizeV2Agreement(id, value, tokens)),
     paused: Boolean(paused),
     defaultFeeBps: Number(defaultFeeBps),
+  };
+}
+
+async function readV1Snapshot(address: Address): Promise<Omit<ArcMarketSnapshot, "dialect" | "capabilities" | "scannedAt">> {
+  const client = arcPublicClient();
+  const [taskCount, exchangeCount, feeBps] = await Promise.all([
+    client.readContract({ address, abi: hankaArcEscrowAbi, functionName: "taskCount" }),
+    client.readContract({ address, abi: hankaArcEscrowAbi, functionName: "pointExchangeCount" }),
+    client.readContract({ address, abi: hankaArcEscrowAbi, functionName: "feeBps" }),
+  ]);
+  const [taskValues, exchangeValues] = await Promise.all([
+    mapWithConcurrency(recordIds(taskCount), SCAN_CONCURRENCY, async id => ({
+      id,
+      value: (await client.readContract({ address, abi: hankaArcEscrowAbi, functionName: "tasks", args: [id] })) as V1TaskTuple,
+    })),
+    mapWithConcurrency(recordIds(exchangeCount), SCAN_CONCURRENCY, async id => ({
+      id,
+      value: (await client.readContract({ address, abi: hankaArcEscrowAbi, functionName: "pointExchanges", args: [id] })) as V1ExchangeTuple,
+    })),
+  ]);
+  const tokens = await readTokenMetadata([...taskValues.map(item => item.value[2]), ...exchangeValues.map(item => item.value[2])]);
+  const fee = Number(feeBps);
+  return {
+    bounties: taskValues.map(({ id, value }) => normalizeV1Task(id, value, tokens, fee)),
+    agreements: exchangeValues.map(({ id, value }) => normalizeV1Exchange(id, value, tokens, fee)),
+    // v1 has no pause switch.
+    paused: false,
+    defaultFeeBps: fee,
+  };
+}
+
+/**
+ * Reads every record the deployed contract holds, newest first.
+ *
+ * The contract stores commitment hashes rather than listing text, so callers
+ * must render the hash as a reference and never invent a description for it.
+ */
+export async function getArcMarketSnapshot(): Promise<ArcMarketSnapshot> {
+  const address = contractOrThrow();
+  const dialect = await detectArcDialect();
+  const data = dialect === "v2" ? await readV2Snapshot(address) : await readV1Snapshot(address);
+  return {
+    ...data,
+    bounties: data.bounties.sort((a, b) => Number(b.id - a.id)),
+    agreements: data.agreements.sort((a, b) => Number(b.id - a.id)),
+    dialect,
+    capabilities: arcCapabilities(dialect),
     scannedAt: Date.now(),
   };
 }
@@ -698,10 +676,12 @@ export async function getArcWalletDashboard(wallet: Address, snapshot?: ArcMarke
 /** The subset of the token catalogue the deployed contract actually accepts. */
 export async function getArcAllowedTokens(): Promise<Array<(typeof ARC_TESTNET_TOKENS)[number]>> {
   const address = contractOrThrow();
+  const dialect = await detectArcDialect();
+  const abi = dialect === "v2" ? hankaMarketV2Abi : hankaArcEscrowAbi;
   const client = arcPublicClient();
   const results = await mapWithConcurrency(ARC_TESTNET_TOKENS, 3, async token => {
     try {
-      const allowed = await client.readContract({ address, abi: hankaMarketV2Abi, functionName: "allowedToken", args: [token.address as Address] });
+      const allowed = await client.readContract({ address, abi, functionName: "allowedToken", args: [token.address as Address] });
       return allowed ? token : null;
     } catch {
       return null;
@@ -710,15 +690,16 @@ export async function getArcAllowedTokens(): Promise<Array<(typeof ARC_TESTNET_T
   return results.filter((token): token is (typeof ARC_TESTNET_TOKENS)[number] => token !== null);
 }
 
-/** Reads the arbiter so dispute copy can name the configured resolver. */
+/** Reads the dispute resolver so dispute copy can name the configured address. */
 export async function getArcArbiter(): Promise<Address | null> {
   try {
-    const arbiter = await arcPublicClient().readContract({
-      address: contractOrThrow(),
-      abi: hankaMarketV2Abi,
-      functionName: "roleHolder",
-      args: [1],
-    });
+    const address = contractOrThrow();
+    const dialect = await detectArcDialect();
+    const client = arcPublicClient();
+    const arbiter =
+      dialect === "v2"
+        ? await client.readContract({ address, abi: hankaMarketV2Abi, functionName: "roleHolder", args: [1] })
+        : await client.readContract({ address, abi: hankaArcEscrowAbi, functionName: "resolver" });
     return arbiter === ZERO_ADDRESS ? null : arbiter;
   } catch {
     return null;
@@ -747,22 +728,52 @@ async function ensureAllowance(token: Address, amount: bigint, account: Address,
   if (receipt.status !== "success") throw new Error("The token approval did not complete.");
 }
 
-type MarketFunction =
-  | "acceptBounty" | "submitBounty" | "approveBounty" | "disputeBounty" | "cancelUnacceptedBounty"
-  | "expireUnacceptedBounty" | "timeoutAcceptedBounty" | "timeoutSubmittedBounty" | "openRetentionCase"
-  | "releaseRetentionBond" | "acceptAgreement" | "declineAgreement" | "disputeAgreement"
-  | "cancelUnacceptedAgreement" | "expireUnacceptedAgreement" | "timeoutAgreement";
+/**
+ * Every lifecycle action, named once and mapped to each contract's own function.
+ * `null` means the deployed contract has no equivalent, which is reported as an
+ * unsupported action rather than sent and left to revert in the fallback.
+ */
+const ACTION_FUNCTIONS = {
+  acceptBounty: { v2: "acceptBounty", v1: "acceptTask" },
+  submitBounty: { v2: "submitBounty", v1: "submitTask" },
+  approveBounty: { v2: "approveBounty", v1: "approveTask" },
+  disputeBounty: { v2: "disputeBounty", v1: "disputeTask" },
+  cancelBounty: { v2: "cancelUnacceptedBounty", v1: "cancelUnacceptedTask" },
+  expireBounty: { v2: "expireUnacceptedBounty", v1: null },
+  timeoutAcceptedBounty: { v2: "timeoutAcceptedBounty", v1: null },
+  timeoutSubmittedBounty: { v2: "timeoutSubmittedBounty", v1: null },
+  openRetentionCase: { v2: "openRetentionCase", v1: null },
+  releaseRetentionBond: { v2: "releaseRetentionBond", v1: null },
+  acceptAgreement: { v2: "acceptAgreement", v1: "acceptPointExchange" },
+  declineAgreement: { v2: "declineAgreement", v1: "declinePointExchange" },
+  disputeAgreement: { v2: "disputeAgreement", v1: "disputePointExchange" },
+  cancelAgreement: { v2: "cancelUnacceptedAgreement", v1: "cancelUnacceptedPointExchange" },
+  expireAgreement: { v2: "expireUnacceptedAgreement", v1: null },
+  timeoutAgreement: { v2: "timeoutAgreement", v1: null },
+} as const satisfies Record<string, { v2: string; v1: string | null }>;
+
+export type ArcAction = keyof typeof ACTION_FUNCTIONS;
+
+/** Whether the deployed contract can perform this action at all. */
+export const arcActionSupported = (action: ArcAction, dialect: ArcDialect) => ACTION_FUNCTIONS[action][dialect] !== null;
+
+const abiFor = (dialect: ArcDialect) => (dialect === "v2" ? hankaMarketV2Abi : hankaArcEscrowAbi);
 
 /**
  * Simulates before signing so a doomed transaction surfaces the contract's own
  * error instead of costing the user a failed transaction and a wallet prompt.
  */
-async function writeMarket(functionName: MarketFunction, args: readonly unknown[], selected?: ArcEip1193Provider): Promise<Hex> {
+async function writeMarket(action: ArcAction, args: readonly unknown[], selected?: ArcEip1193Provider): Promise<Hex> {
   const address = contractOrThrow();
+  const dialect = await detectArcDialect();
+  const functionName = ACTION_FUNCTIONS[action][dialect];
+  if (!functionName) {
+    throw new Error(`${ARC_DIALECT_LABEL[dialect]} does not support this action.`);
+  }
   const { walletClient, account } = await walletAndAccount(selected);
   const { request } = await arcPublicClient().simulateContract({
     address,
-    abi: hankaMarketV2Abi,
+    abi: abiFor(dialect),
     functionName: functionName as never,
     args: args as never,
     account,
@@ -777,32 +788,51 @@ export type ArcBountyInput = {
   reward: bigint;
   acceptBy: number;
   dueAt: number;
+  /** Ignored on v1, which has no post-submission review window. */
   reviewBy: number;
   terms: string;
   metadata: string;
 };
 
-/** Funds a general bounty: approve the exact reward, then escrow it. */
+/** Funds a bounty (a v1 task): approve the exact reward, then escrow it. */
 export async function createArcBounty(input: ArcBountyInput, selected?: ArcEip1193Provider): Promise<ArcCreatedRecord> {
   const address = contractOrThrow();
+  const dialect = await detectArcDialect();
   const { walletClient, account } = await walletAndAccount(selected);
   const termsHash = hashArcTerms(input.terms);
   const metadataHash = hashArcMetadata(input.metadata);
   await ensureAllowance(input.token, input.reward, account, walletClient);
   const client = arcPublicClient();
-  const { request } = await client.simulateContract({
-    address,
-    abi: hankaMarketV2Abi,
-    functionName: "createBounty",
-    args: [input.token, input.reward, BigInt(input.acceptBy), BigInt(input.dueAt), BigInt(input.reviewBy), termsHash, metadataHash],
-    account,
-  });
-  const hash = await walletClient.writeContract({ ...request, account, chain: hankaArcTestnet });
+  const hash = await (async () => {
+    if (dialect === "v2") {
+      const { request } = await client.simulateContract({
+        address,
+        abi: hankaMarketV2Abi,
+        functionName: "createBounty",
+        args: [input.token, input.reward, BigInt(input.acceptBy), BigInt(input.dueAt), BigInt(input.reviewBy), termsHash, metadataHash],
+        account,
+      });
+      return walletClient.writeContract({ ...request, account, chain: hankaArcTestnet });
+    }
+    const { request } = await client.simulateContract({
+      address,
+      abi: hankaArcEscrowAbi,
+      functionName: "createTask",
+      args: [input.token, input.reward, BigInt(input.acceptBy), BigInt(input.dueAt), termsHash],
+      account,
+    });
+    return walletClient.writeContract({ ...request, account, chain: hankaArcTestnet });
+  })();
   const receipt = await client.waitForTransactionReceipt({ hash });
   if (receipt.status !== "success") throw new Error("The bounty funding transaction did not complete.");
-  const created = parseEventLogs({ abi: hankaMarketV2Abi, logs: receipt.logs, eventName: "BountyCreated", strict: false })
-    .find(event => sameAddress(event.address, address));
-  return { hash, id: typeof created?.args.id === "bigint" ? created.args.id : null, termsHash, metadataHash };
+  const created = parseEventLogs({
+    abi: abiFor(dialect),
+    logs: receipt.logs,
+    eventName: dialect === "v2" ? "BountyCreated" : "TaskCreated",
+    strict: false,
+  }).find(event => sameAddress(event.address, address));
+  const id = (created?.args as { id?: bigint } | undefined)?.id;
+  return { hash, id: typeof id === "bigint" ? id : null, termsHash, metadataHash };
 }
 
 export type ArcAgreementInput = {
@@ -811,6 +841,7 @@ export type ArcAgreementInput = {
   collateral: bigint;
   acceptBy: number;
   settlementBy: number;
+  /** Ignored on v1, whose settlement is an explicit payout rather than a split. */
   makerDeclinePayoutBps: number;
   makerTimeoutPayoutBps: number;
   terms: string;
@@ -820,6 +851,7 @@ export type ArcAgreementInput = {
 /** Opens a named, equal-collateral agreement and escrows the maker's side. */
 export async function createArcAgreement(input: ArcAgreementInput, selected?: ArcEip1193Provider): Promise<ArcCreatedRecord> {
   const address = contractOrThrow();
+  const dialect = await detectArcDialect();
   if (!isAddress(input.taker)) throw new Error("Enter a valid counterparty EVM address.");
   const { walletClient, account } = await walletAndAccount(selected);
   if (sameAddress(input.taker, account)) throw new Error("The counterparty must be a different wallet.");
@@ -827,29 +859,46 @@ export async function createArcAgreement(input: ArcAgreementInput, selected?: Ar
   const metadataHash = hashArcMetadata(input.metadata);
   await ensureAllowance(input.token, input.collateral, account, walletClient);
   const client = arcPublicClient();
-  const { request } = await client.simulateContract({
-    address,
-    abi: hankaMarketV2Abi,
-    functionName: "createAgreement",
-    args: [
-      input.token,
-      input.taker,
-      input.collateral,
-      BigInt(input.acceptBy),
-      BigInt(input.settlementBy),
-      input.makerDeclinePayoutBps,
-      input.makerTimeoutPayoutBps,
-      termsHash,
-      metadataHash,
-    ],
-    account,
-  });
-  const hash = await walletClient.writeContract({ ...request, account, chain: hankaArcTestnet });
+  const hash = await (async () => {
+    if (dialect === "v2") {
+      const { request } = await client.simulateContract({
+        address,
+        abi: hankaMarketV2Abi,
+        functionName: "createAgreement",
+        args: [
+          input.token,
+          input.taker,
+          input.collateral,
+          BigInt(input.acceptBy),
+          BigInt(input.settlementBy),
+          input.makerDeclinePayoutBps,
+          input.makerTimeoutPayoutBps,
+          termsHash,
+          metadataHash,
+        ],
+        account,
+      });
+      return walletClient.writeContract({ ...request, account, chain: hankaArcTestnet });
+    }
+    const { request } = await client.simulateContract({
+      address,
+      abi: hankaArcEscrowAbi,
+      functionName: "createPointExchange",
+      args: [input.token, input.taker, input.collateral, BigInt(input.acceptBy), BigInt(input.settlementBy), termsHash],
+      account,
+    });
+    return walletClient.writeContract({ ...request, account, chain: hankaArcTestnet });
+  })();
   const receipt = await client.waitForTransactionReceipt({ hash });
   if (receipt.status !== "success") throw new Error("The agreement funding transaction did not complete.");
-  const created = parseEventLogs({ abi: hankaMarketV2Abi, logs: receipt.logs, eventName: "AgreementCreated", strict: false })
-    .find(event => sameAddress(event.address, address));
-  return { hash, id: typeof created?.args.id === "bigint" ? created.args.id : null, termsHash, metadataHash };
+  const created = parseEventLogs({
+    abi: abiFor(dialect),
+    logs: receipt.logs,
+    eventName: dialect === "v2" ? "AgreementCreated" : "PointExchangeCreated",
+    strict: false,
+  }).find(event => sameAddress(event.address, address));
+  const id = (created?.args as { id?: bigint } | undefined)?.id;
+  return { hash, id: typeof id === "bigint" ? id : null, termsHash, metadataHash };
 }
 
 /** The taker's collateral is pulled on acceptance, so it needs an approval. */
@@ -864,8 +913,8 @@ export const submitArcBounty = (id: bigint, delivery: string, selected?: ArcEip1
   writeMarket("submitBounty", [id, hashArcTerms(delivery)], selected);
 export const approveArcBounty = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("approveBounty", [id], selected);
 export const disputeArcBounty = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("disputeBounty", [id], selected);
-export const cancelArcBounty = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("cancelUnacceptedBounty", [id], selected);
-export const expireArcBounty = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("expireUnacceptedBounty", [id], selected);
+export const cancelArcBounty = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("cancelBounty", [id], selected);
+export const expireArcBounty = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("expireBounty", [id], selected);
 export const timeoutArcAcceptedBounty = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("timeoutAcceptedBounty", [id], selected);
 export const timeoutArcSubmittedBounty = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("timeoutSubmittedBounty", [id], selected);
 export const openArcRetentionCase = (id: bigint, evidence: string, selected?: ArcEip1193Provider) =>
@@ -873,8 +922,8 @@ export const openArcRetentionCase = (id: bigint, evidence: string, selected?: Ar
 export const releaseArcRetentionBond = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("releaseRetentionBond", [id], selected);
 export const declineArcAgreement = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("declineAgreement", [id], selected);
 export const disputeArcAgreement = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("disputeAgreement", [id], selected);
-export const cancelArcAgreement = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("cancelUnacceptedAgreement", [id], selected);
-export const expireArcAgreement = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("expireUnacceptedAgreement", [id], selected);
+export const cancelArcAgreement = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("cancelAgreement", [id], selected);
+export const expireArcAgreement = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("expireAgreement", [id], selected);
 export const timeoutArcAgreement = (id: bigint, selected?: ArcEip1193Provider) => writeMarket("timeoutAgreement", [id], selected);
 
 export { ARC_TESTNET_CHAIN_ID_HEX };

@@ -18,6 +18,8 @@ type BountyCreateDialogProps = {
   onOpenChange: (open: boolean) => void;
   tokens: TokenOption[];
   busy?: boolean;
+  /** HankaArcEscrow has no post-submission review window. */
+  showReviewWindow?: boolean;
   onSubmit: (draft: BountyDraft) => Promise<void>;
 };
 
@@ -29,7 +31,7 @@ const MAX_DELIVERABLE_LENGTH = 100;
  * The brief the user types is hashed into the onchain terms commitment, so the
  * copy is careful not to imply the contract stores or verifies the text itself.
  */
-export function BountyCreateDialog({ open, onOpenChange, tokens, busy = false, onSubmit }: BountyCreateDialogProps) {
+export function BountyCreateDialog({ open, onOpenChange, tokens, busy = false, showReviewWindow = true, onSubmit }: BountyCreateDialogProps) {
   const [token, setToken] = useState(tokens[0]?.address ?? "");
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
@@ -72,7 +74,9 @@ export function BountyCreateDialog({ open, onOpenChange, tokens, busy = false, o
         reward: toTokenUnits(reward, selectedToken.decimals),
         acceptBy: toUnixSeconds(acceptBy, "Accept deadline"),
         dueAt: toUnixSeconds(dueAt, "Due date"),
-        reviewBy: toUnixSeconds(reviewBy, "Review deadline"),
+        // Ignored by contracts without a review window; still validated so a
+        // later upgrade cannot inherit a stale value.
+        reviewBy: showReviewWindow ? toUnixSeconds(reviewBy, "Review deadline") : toUnixSeconds(dueAt, "Due date"),
         terms,
         metadata: `${title.trim()}::${summary.trim()}`,
         title: title.trim(),
@@ -165,7 +169,7 @@ export function BountyCreateDialog({ open, onOpenChange, tokens, busy = false, o
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className={`grid gap-3 ${showReviewWindow ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
             <div>
               <label className="hanka-label" htmlFor="bounty-accept">
                 Accept by
@@ -178,16 +182,19 @@ export function BountyCreateDialog({ open, onOpenChange, tokens, busy = false, o
               </label>
               <Input id="bounty-due" type="datetime-local" value={dueAt} onChange={event => setDueAt(event.target.value)} />
             </div>
-            <div>
-              <label className="hanka-label" htmlFor="bounty-review">
-                Review by
-              </label>
-              <Input id="bounty-review" type="datetime-local" value={reviewBy} onChange={event => setReviewBy(event.target.value)} />
-            </div>
+            {showReviewWindow ? (
+              <div>
+                <label className="hanka-label" htmlFor="bounty-review">
+                  Review by
+                </label>
+                <Input id="bounty-review" type="datetime-local" value={reviewBy} onChange={event => setReviewBy(event.target.value)} />
+              </div>
+            ) : null}
           </div>
           <p className="hanka-field-hint">
-            The contract requires these to run forward: accept, then due, then review. After the review deadline the
-            reward can be released to the claimant by anyone.
+            {showReviewWindow
+              ? "The contract requires these to run forward: accept, then due, then review. After the review deadline the reward can be released to the claimant by anyone."
+              : "The contract requires these to run forward: accept, then due. This deployment has no review window, so only you can release the reward."}
           </p>
 
           <label className="flex gap-2 text-sm leading-5 text-[var(--hanka-muted)]">

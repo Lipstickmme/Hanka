@@ -53,6 +53,7 @@ function bounty(overrides: Partial<ArcBounty> = {}): ArcBounty {
     proofType: 0,
     kind: 0,
     state: ARC_BOUNTY_STATE.open,
+    stateLabel: "Open",
     offerId: BigInt(0),
     termsHash: "0xaa" as never,
     metadataHash: "0xbb" as never,
@@ -76,6 +77,7 @@ function agreement(overrides: Partial<ArcAgreement> = {}): ArcAgreement {
     makerDeclinePayoutBps: 5_000,
     makerTimeoutPayoutBps: 5_000,
     state: ARC_AGREEMENT_STATE.open,
+    stateLabel: "Open",
     termsHash: "0xaa" as never,
     metadataHash: "0xbb" as never,
     ...overrides,
@@ -87,52 +89,52 @@ const ids = (actions: Array<{ id: string }>) => actions.map(action => action.id)
 describe("bounty lifecycle actions", () => {
   it("offers an open bounty to a stranger but never to its own requester", () => {
     const record = bounty();
-    expect(ids(bountyActions(record, STRANGER, allBountyHandlers, NOW))).toEqual(["accept"]);
+    expect(ids(bountyActions(record, STRANGER, allBountyHandlers, { now: NOW }))).toEqual(["accept"]);
     // acceptBounty() reverts with Unauthorized for the requester.
-    expect(ids(bountyActions(record, REQUESTER, allBountyHandlers, NOW))).toEqual(["cancel"]);
+    expect(ids(bountyActions(record, REQUESTER, allBountyHandlers, { now: NOW }))).toEqual(["cancel"]);
   });
 
   it("offers nothing to accept while disconnected", () => {
-    expect(ids(bountyActions(bounty(), null, allBountyHandlers, NOW))).toEqual([]);
+    expect(ids(bountyActions(bounty(), null, allBountyHandlers, { now: NOW }))).toEqual([]);
   });
 
   it("replaces accept with the permissionless refund once the accept deadline passes", () => {
     const record = bounty({ acceptBy: past });
-    expect(ids(bountyActions(record, STRANGER, allBountyHandlers, NOW))).toEqual(["expire"]);
-    expect(ids(bountyActions(record, REQUESTER, allBountyHandlers, NOW))).toEqual(["cancel", "expire"]);
+    expect(ids(bountyActions(record, STRANGER, allBountyHandlers, { now: NOW }))).toEqual(["expire"]);
+    expect(ids(bountyActions(record, REQUESTER, allBountyHandlers, { now: NOW }))).toEqual(["cancel", "expire"]);
   });
 
   it("lets only the claimant submit, and only before the due date", () => {
     const accepted = bounty({ state: ARC_BOUNTY_STATE.accepted, taker: TAKER });
-    expect(ids(bountyActions(accepted, TAKER, allBountyHandlers, NOW))).toEqual(["dispute", "submit"]);
-    expect(ids(bountyActions(accepted, REQUESTER, allBountyHandlers, NOW))).toEqual(["dispute"]);
-    expect(ids(bountyActions(accepted, STRANGER, allBountyHandlers, NOW))).toEqual([]);
+    expect(ids(bountyActions(accepted, TAKER, allBountyHandlers, { now: NOW }))).toEqual(["dispute", "submit"]);
+    expect(ids(bountyActions(accepted, REQUESTER, allBountyHandlers, { now: NOW }))).toEqual(["dispute"]);
+    expect(ids(bountyActions(accepted, STRANGER, allBountyHandlers, { now: NOW }))).toEqual([]);
 
     const overdue = bounty({ state: ARC_BOUNTY_STATE.accepted, taker: TAKER, dueAt: past });
-    expect(ids(bountyActions(overdue, TAKER, allBountyHandlers, NOW))).toEqual(["dispute", "timeout-accepted"]);
+    expect(ids(bountyActions(overdue, TAKER, allBountyHandlers, { now: NOW }))).toEqual(["dispute", "timeout-accepted"]);
   });
 
   it("lets only the requester release a submitted bounty until the review window lapses", () => {
     const submitted = bounty({ state: ARC_BOUNTY_STATE.submitted, taker: TAKER });
-    expect(ids(bountyActions(submitted, REQUESTER, allBountyHandlers, NOW))).toEqual(["approve", "dispute"]);
-    expect(ids(bountyActions(submitted, TAKER, allBountyHandlers, NOW))).toEqual(["dispute"]);
+    expect(ids(bountyActions(submitted, REQUESTER, allBountyHandlers, { now: NOW }))).toEqual(["approve", "dispute"]);
+    expect(ids(bountyActions(submitted, TAKER, allBountyHandlers, { now: NOW }))).toEqual(["dispute"]);
 
     // After reviewBy, timeoutSubmittedBounty() is callable by anyone.
     const lapsed = bounty({ state: ARC_BOUNTY_STATE.submitted, taker: TAKER, reviewBy: past });
-    expect(ids(bountyActions(lapsed, STRANGER, allBountyHandlers, NOW))).toEqual(["timeout-submitted"]);
+    expect(ids(bountyActions(lapsed, STRANGER, allBountyHandlers, { now: NOW }))).toEqual(["timeout-submitted"]);
   });
 
   it("releases a retention bond only after the retention period ends", () => {
     const holding = bounty({ state: ARC_BOUNTY_STATE.retentionActive, taker: TAKER, retentionEndsAt: future });
-    expect(ids(bountyActions(holding, TAKER, allBountyHandlers, NOW))).toEqual([]);
+    expect(ids(bountyActions(holding, TAKER, allBountyHandlers, { now: NOW }))).toEqual([]);
 
     const matured = bounty({ state: ARC_BOUNTY_STATE.retentionActive, taker: TAKER, retentionEndsAt: past });
-    expect(ids(bountyActions(matured, TAKER, allBountyHandlers, NOW))).toEqual(["release-bond"]);
+    expect(ids(bountyActions(matured, TAKER, allBountyHandlers, { now: NOW }))).toEqual(["release-bond"]);
   });
 
   it("offers nothing on a finished record", () => {
     for (const state of [ARC_BOUNTY_STATE.paid, ARC_BOUNTY_STATE.settled, ARC_BOUNTY_STATE.cancelled, ARC_BOUNTY_STATE.expired]) {
-      expect(ids(bountyActions(bounty({ state, taker: TAKER }), REQUESTER, allBountyHandlers, NOW))).toEqual([]);
+      expect(ids(bountyActions(bounty({ state, taker: TAKER }), REQUESTER, allBountyHandlers, { now: NOW }))).toEqual([]);
     }
   });
 });
@@ -140,29 +142,29 @@ describe("bounty lifecycle actions", () => {
 describe("agreement lifecycle actions", () => {
   it("lets only the named counterparty match collateral", () => {
     const record = agreement();
-    expect(ids(agreementActions(record, TAKER, allAgreementHandlers, NOW))).toEqual(["accept"]);
-    expect(ids(agreementActions(record, REQUESTER, allAgreementHandlers, NOW))).toEqual(["cancel"]);
-    expect(ids(agreementActions(record, STRANGER, allAgreementHandlers, NOW))).toEqual([]);
+    expect(ids(agreementActions(record, TAKER, allAgreementHandlers, { now: NOW }))).toEqual(["accept"]);
+    expect(ids(agreementActions(record, REQUESTER, allAgreementHandlers, { now: NOW }))).toEqual(["cancel"]);
+    expect(ids(agreementActions(record, STRANGER, allAgreementHandlers, { now: NOW }))).toEqual([]);
   });
 
   it("swaps acceptance for a refund once the accept deadline passes", () => {
     const record = agreement({ acceptBy: past });
-    expect(ids(agreementActions(record, TAKER, allAgreementHandlers, NOW))).toEqual(["expire"]);
+    expect(ids(agreementActions(record, TAKER, allAgreementHandlers, { now: NOW }))).toEqual(["expire"]);
   });
 
   it("offers the maker's decline split only before settlement, and the timeout split only after", () => {
     const funded = agreement({ state: ARC_AGREEMENT_STATE.funded });
-    expect(ids(agreementActions(funded, REQUESTER, allAgreementHandlers, NOW))).toEqual(["decline", "dispute"]);
-    expect(ids(agreementActions(funded, TAKER, allAgreementHandlers, NOW))).toEqual(["dispute"]);
+    expect(ids(agreementActions(funded, REQUESTER, allAgreementHandlers, { now: NOW }))).toEqual(["decline", "dispute"]);
+    expect(ids(agreementActions(funded, TAKER, allAgreementHandlers, { now: NOW }))).toEqual(["dispute"]);
 
     const lapsed = agreement({ state: ARC_AGREEMENT_STATE.funded, settlementBy: past });
-    expect(ids(agreementActions(lapsed, REQUESTER, allAgreementHandlers, NOW))).toEqual(["dispute", "timeout"]);
-    expect(ids(agreementActions(lapsed, STRANGER, allAgreementHandlers, NOW))).toEqual(["timeout"]);
+    expect(ids(agreementActions(lapsed, REQUESTER, allAgreementHandlers, { now: NOW }))).toEqual(["dispute", "timeout"]);
+    expect(ids(agreementActions(lapsed, STRANGER, allAgreementHandlers, { now: NOW }))).toEqual(["timeout"]);
   });
 
   it("offers nothing on a finished agreement", () => {
     for (const state of [ARC_AGREEMENT_STATE.settled, ARC_AGREEMENT_STATE.cancelled, ARC_AGREEMENT_STATE.expired]) {
-      expect(ids(agreementActions(agreement({ state }), REQUESTER, allAgreementHandlers, NOW))).toEqual([]);
+      expect(ids(agreementActions(agreement({ state }), REQUESTER, allAgreementHandlers, { now: NOW }))).toEqual([]);
     }
   });
 });

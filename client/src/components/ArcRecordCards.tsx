@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import {
-  agreementStateLabel,
   agreementTone,
-  bountyStateLabel,
   bountyTone,
   feePercent,
   formatDeadline,
@@ -17,6 +15,7 @@ import { ZERO_ADDRESS, arcProofTypeLabel, sameAddress, type ArcAgreement, type A
 import {
   agreementActions,
   bountyActions,
+  type ActionContext,
   type AgreementActionHandlers,
   type BountyActionHandlers,
   type RecordAction,
@@ -88,17 +87,19 @@ export function BountyCard({
   handlers,
   busy,
   title,
+  context,
 }: {
   record: ArcBounty;
   wallet: Address | null;
   handlers: BountyActionHandlers;
   busy?: boolean;
   title?: string;
+  context?: ActionContext;
 }) {
   const isRequester = sameAddress(record.requester, wallet);
   const isTaker = sameAddress(record.taker, wallet);
   const badges = [
-    { label: bountyStateLabel(record.state), className: toneClass(bountyTone(record.state)) },
+    { label: record.stateLabel, className: toneClass(bountyTone(record.state)) },
     { label: record.kind === 1 ? `SOCIAL · ${arcProofTypeLabel(record.proofType)}` : "GENERAL", className: "hanka-chip" },
   ];
   if (isRequester) badges.push({ label: "You requested", className: "hanka-chip hanka-chip-open" });
@@ -110,7 +111,7 @@ export function BountyCard({
     { term: "Protocol fee", value: feePercent(record.feeBpsSnapshot) },
     { term: "Accept by", value: `${formatDeadline(record.acceptBy)} (${formatRelative(record.acceptBy)})` },
     { term: "Due", value: `${formatDeadline(record.dueAt)} (${formatRelative(record.dueAt)})` },
-    { term: "Review by", value: formatDeadline(record.reviewBy) },
+    ...(record.reviewBy > BigInt(0) ? [{ term: "Review by", value: formatDeadline(record.reviewBy) }] : []),
     { term: "Requester", value: shortAddress(record.requester) },
     { term: "Claimant", value: record.taker === ZERO_ADDRESS ? "Unclaimed" : shortAddress(record.taker) },
   ];
@@ -123,7 +124,7 @@ export function BountyCard({
       title={title ?? `Bounty #${record.id}`}
       badges={badges}
       fields={fields}
-      actions={bountyActions(record, wallet, handlers)}
+      actions={bountyActions(record, wallet, handlers, context)}
       busy={busy}
       footnote={`Terms commitment ${shortHash(record.termsHash)} — the contract stores this hash, not the brief text.`}
     />
@@ -135,15 +136,17 @@ export function AgreementCard({
   wallet,
   handlers,
   busy,
+  context,
 }: {
   record: ArcAgreement;
   wallet: Address | null;
   handlers: AgreementActionHandlers;
   busy?: boolean;
+  context?: ActionContext;
 }) {
   const isMaker = sameAddress(record.maker, wallet);
   const badges = [
-    { label: agreementStateLabel(record.state), className: toneClass(agreementTone(record.state)) },
+    { label: record.stateLabel, className: toneClass(agreementTone(record.state)) },
     { label: "POINT EXCHANGE", className: "hanka-chip" },
   ];
   if (isMaker) badges.push({ label: "You opened", className: "hanka-chip hanka-chip-open" });
@@ -157,7 +160,9 @@ export function AgreementCard({
     { term: "Settle by", value: `${formatDeadline(record.settlementBy)} (${formatRelative(record.settlementBy)})` },
     { term: "Maker", value: shortAddress(record.maker) },
     { term: "Counterparty", value: shortAddress(record.taker) },
-    { term: "Decline / timeout split", value: `${record.makerDeclinePayoutBps / 100}% / ${record.makerTimeoutPayoutBps / 100}% to maker` },
+    ...(record.makerDeclinePayoutBps || record.makerTimeoutPayoutBps
+      ? [{ term: "Decline / timeout split", value: `${record.makerDeclinePayoutBps / 100}% / ${record.makerTimeoutPayoutBps / 100}% to maker` }]
+      : []),
   ];
 
   return (
@@ -165,7 +170,7 @@ export function AgreementCard({
       title={`Agreement #${record.id}`}
       badges={badges}
       fields={fields}
-      actions={agreementActions(record, wallet, handlers)}
+      actions={agreementActions(record, wallet, handlers, context)}
       busy={busy}
       footnote={`Terms commitment ${shortHash(record.termsHash)}. This is an agreement on an uncertain outcome, not an oracle or promise of future airdrop value.`}
     />

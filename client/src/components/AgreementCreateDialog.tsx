@@ -16,6 +16,8 @@ type AgreementCreateDialogProps = {
   onOpenChange: (open: boolean) => void;
   tokens: TokenOption[];
   busy?: boolean;
+  /** HankaArcEscrow settles by explicit payout rather than a fixed split. */
+  showPayoutSplits?: boolean;
   onSubmit: (draft: ArcAgreementInput & { title: string }) => Promise<void>;
 };
 
@@ -25,7 +27,7 @@ type AgreementCreateDialogProps = {
  * Both sides post the same collateral; the decline and timeout splits are fixed
  * onchain at creation so neither side can reinterpret them later.
  */
-export function AgreementCreateDialog({ open, onOpenChange, tokens, busy = false, onSubmit }: AgreementCreateDialogProps) {
+export function AgreementCreateDialog({ open, onOpenChange, tokens, busy = false, showPayoutSplits = true, onSubmit }: AgreementCreateDialogProps) {
   const [token, setToken] = useState(tokens[0]?.address ?? "");
   const [counterparty, setCounterparty] = useState("");
   const [collateral, setCollateral] = useState("50");
@@ -52,8 +54,8 @@ export function AgreementCreateDialog({ open, onOpenChange, tokens, busy = false
       toast.error("No token is allowlisted by the market contract yet.");
       return;
     }
-    const decline = Number(declineBps);
-    const timeout = Number(timeoutBps);
+    const decline = showPayoutSplits ? Number(declineBps) : 0;
+    const timeout = showPayoutSplits ? Number(timeoutBps) : 0;
     if (!Number.isInteger(decline) || decline < 0 || decline > 10_000 || !Number.isInteger(timeout) || timeout < 0 || timeout > 10_000) {
       toast.error("Payout splits must be between 0 and 10000 basis points.");
       return;
@@ -64,8 +66,12 @@ export function AgreementCreateDialog({ open, onOpenChange, tokens, busy = false
         "HANKA Arc Testnet point exchange agreement",
         `Title: ${title.trim()}`,
         `Terms: ${terms.trim()}`,
-        `Maker payout if declined: ${decline / 100}% of pooled collateral`,
-        `Maker payout on settlement timeout: ${timeout / 100}% of pooled collateral`,
+        ...(showPayoutSplits
+          ? [
+              `Maker payout if declined: ${decline / 100}% of pooled collateral`,
+              `Maker payout on settlement timeout: ${timeout / 100}% of pooled collateral`,
+            ]
+          : ["Settlement follows this contract's own decline and dispute terms."]),
         "Both sides post equal collateral. This is an agreement on an uncertain outcome, not an oracle or promise of future airdrop value.",
         "Disputes are settled by the configured onchain resolver.",
       ].join("\n");
@@ -158,21 +164,30 @@ export function AgreementCreateDialog({ open, onOpenChange, tokens, busy = false
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="hanka-label" htmlFor="agreement-decline">
-                Maker share if declined (bps)
-              </label>
-              <Input id="agreement-decline" type="number" min="0" max="10000" step="1" value={declineBps} onChange={event => setDeclineBps(event.target.value)} />
-            </div>
-            <div>
-              <label className="hanka-label" htmlFor="agreement-timeout">
-                Maker share on timeout (bps)
-              </label>
-              <Input id="agreement-timeout" type="number" min="0" max="10000" step="1" value={timeoutBps} onChange={event => setTimeoutBps(event.target.value)} />
-            </div>
-          </div>
-          <p className="hanka-field-hint">10000 basis points is the whole pooled collateral, less the protocol fee.</p>
+          {showPayoutSplits ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="hanka-label" htmlFor="agreement-decline">
+                    Maker share if declined (bps)
+                  </label>
+                  <Input id="agreement-decline" type="number" min="0" max="10000" step="1" value={declineBps} onChange={event => setDeclineBps(event.target.value)} />
+                </div>
+                <div>
+                  <label className="hanka-label" htmlFor="agreement-timeout">
+                    Maker share on timeout (bps)
+                  </label>
+                  <Input id="agreement-timeout" type="number" min="0" max="10000" step="1" value={timeoutBps} onChange={event => setTimeoutBps(event.target.value)} />
+                </div>
+              </div>
+              <p className="hanka-field-hint">10000 basis points is the whole pooled collateral, less the protocol fee.</p>
+            </>
+          ) : (
+            <p className="hanka-field-hint">
+              This deployment settles by mutual approval, a decline, or the onchain resolver rather than a split fixed
+              at creation.
+            </p>
+          )}
 
           <div>
             <label className="hanka-label" htmlFor="agreement-terms">

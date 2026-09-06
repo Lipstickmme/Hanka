@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const read = (file: string) => readFileSync(path.resolve(process.cwd(), file), "utf8");
 const clientSource = read("client/src/lib/arcTestnet.ts");
+const contractSource = read("client/src/lib/arcContracts.ts");
 const workspace = read("client/src/components/ArcMarketWorkspace.tsx");
 const dashboardPage = read("client/src/pages/ArcDashboard.tsx");
 const marketPage = read("client/src/pages/ArcMarket.tsx");
@@ -19,11 +20,13 @@ describe("Arc wallet dashboard discovery", () => {
     expect(clientSource).toContain("sameAddress(record.maker, wallet) || sameAddress(record.taker, wallet)");
   });
 
-  it("maps the contract's own state enums rather than inventing labels", () => {
-    expect(clientSource).toContain(
+  it("maps each contract's own state enums rather than inventing labels", () => {
+    expect(contractSource).toContain(
       '["None", "Open", "Accepted", "Submitted", "Paid", "RetentionActive", "RetentionCase", "Disputed", "Settled", "Cancelled", "Expired"]',
     );
-    expect(clientSource).toContain('["None", "Open", "Funded", "Disputed", "Settled", "Cancelled", "Expired"]');
+    expect(contractSource).toContain('["None", "Open", "Funded", "Disputed", "Settled", "Cancelled", "Expired"]');
+    expect(contractSource).toContain('["None", "Open", "Accepted", "Submitted", "Disputed", "Paid", "Cancelled"]');
+    expect(contractSource).toContain('["None", "Open", "Funded", "Disputed", "Settled", "Declined", "Cancelled"]');
   });
 
   it("exposes a real-only public bounty scan without seeded marketplace records", () => {
